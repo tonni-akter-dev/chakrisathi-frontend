@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* ============================================================
+   THEME — Tailwind v4 declaration
+   ============================================================ */
+@theme {
+  /* Fonts */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-hind: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand palette */
+  --color-brand-50:  #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+
+  /* Radius scale */
+  --radius-card: 14px;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  --shadow-card: 0 4px 6px -1px rgb(15 23 42 / 0.04), 0 2px 4px -2px rgb(15 23 42 / 0.04);
+  --shadow-lift: 0 12px 24px -8px rgb(15 23 42 / 0.12);
+
+  /* Animations */
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes marquee {
+    0%   { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply font-hind antialiased;
+  }
+}
+
+/* ============================================================
+   COMPONENT UTILITIES
+   ============================================================ */
+@layer components {
+  .container-tight {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-6;
+  }
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50;
+  }
+  .card {
+    @apply rounded-card border border-slate-200 bg-white shadow-soft;
+  }
+  .divider {
+    @apply h-px w-full bg-slate-200;
+  }
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
