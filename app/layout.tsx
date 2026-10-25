@@ -19,8 +19,7 @@ const hind = Hind_Siliguri({
 
 export const metadata: Metadata = {
   title: 'চাকরি সাথী — সরকারি চাকরির সার্কুলার ও আবেদন সহায়তা',
-  description:
-    'বাংলাদেশের সব চলমান সরকারি চাকরির সার্কুলার এক জায়গায়। যোগ্যতা যাচাই, আবেদন সহায়তা এবং ডেডলাইন অ্যালার্ট।',
+  description: 'বাংলাদেশের সব চলমান সরকারি চাকরির সার্কুলার এক জায়গায়।',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -29,22 +28,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-hind bg-slate-50 text-slate-900 antialiased">
         <AppProvider>
           {children}
+
           <ToastContainer
             position="bottom-center"
             autoClose={3000}
             hideProgressBar={true}
-            newestOnTop={false}
             closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
             theme="dark"
             toastStyle={{ borderRadius: '9999px', fontWeight: '600' }}
           />
         </AppProvider>
       </body>
-
     </html>
   );
 }

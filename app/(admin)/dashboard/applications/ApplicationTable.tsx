@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import {  ChevronRight } from 'lucide-react';
 
@@ -10,7 +11,7 @@ const STATUS_MAP: Record<string, { label: string, color: string, bg: string }> =
 };
 
 export default function ApplicationTable({ data }: { data: any[] }) {
-  if (data.length === 0) {
+  if (data.length === 0) {  
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-20 text-center">
         <div className="text-4xl">📭</div>
