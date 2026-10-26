@@ -25,9 +25,11 @@ export const totalPosts = (c: Circular): number =>
 export const catCount = (c: Circular): number => c.cats ?? c.posts.length;
 
 export const timeLeft = (c: Circular): number => {
+  // Server side e thakle 0 ba 1 return korbe, browser e giye actual time dibe
   if (typeof window === 'undefined') return 1; 
   return new Date(c.end).getTime() - Date.now();
 };
+
 export function leftText(ms: number): { t: string; cls: 'safe' | 'warn' | 'closed' } {
   if (ms <= 0) return { t: 'শেষ', cls: 'closed' };
   const d = Math.floor(ms / 864e5);

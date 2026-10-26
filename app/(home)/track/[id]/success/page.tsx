@@ -21,18 +21,11 @@ export default function ApplicantCopyPage() {
   return (
     <div className="min-h-screen bg-[#FBF8F4] font-hind pb-20">
       
-      {/* ================= Top Header ================= */}
-      <header className="border-b border-slate-200/60 bg-white sticky top-0 z-50">
-        <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link href="/track" className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-600">
-            <ArrowLeft className="h-4 w-4" /> ফিরে যান
-          </Link>
-          <div className="text-lg font-extrabold text-slate-900">চাকরি<span className="text-orange-500">সাথী</span></div>
-        </div>
-      </header>
 
       <main className="mx-auto max-w-3xl px-4 pt-10 sm:px-6">
-        
+            <Link href="/track" className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-600">
+            <ArrowLeft className="h-4 w-4" /> ফিরে যান
+          </Link>
         {/* ================= Success Banner ================= */}
         <div className="mb-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="mb-4 grid h-20 w-20 place-items-center rounded-full bg-emerald-100 ring-8 ring-emerald-50">
