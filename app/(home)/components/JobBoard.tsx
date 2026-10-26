@@ -1,35 +1,46 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react/no-unescaped-entities */
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { CIRCULARS } from '@/utils/data';
 import { bn, totalPosts } from '@/utils/helpers';
 import { useApp } from '@/utils/AppContext';
+import type { Circular } from '@/utils/types'; // টাইপ ইমপোর্ট
 import CircularCard from './CircularCard';
 import PostTable from './PostTable';
 import EligibilityChecker from './EligibilityChecker';
 import DetailModal from './DetailModal';
-import ApplySupportModal from './ApplySupportModal'; // Import new modal
+import ApplySupportModal from './ApplySupportModal';
 
 export default function JobBoard() {
   const { state, update } = useApp();
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [applyId, setApplyId] = useState<string | null>(null); // New state
+  const [applyId, setApplyId] = useState<string | null>(null);
 
-  const filtered = CIRCULARS
-    .filter((c) => state.cat === 'all' || c.cat === state.cat)
-    .filter((c) => {
-      const q = state.q.trim().toLowerCase();
-      if (!q) return true;
-      return (c.org + c.orgEn + c.loc + c.posts.map((p) => p.n).join(' ')).toLowerCase().includes(q);
-    })
-    .sort((a, b) => {
-      if (state.sort === 'posts') return totalPosts(b) - totalPosts(a);
-      if (state.sort === 'new') return new Date(b.start).getTime() - new Date(a.start).getTime();
-      return new Date(a.end).getTime() - new Date(b.end).getTime();
-    });
+  // ✅ ১. ফলাফল রাখার জন্য স্টেট তৈরি করা হলো
+  // শুরুতে CIRCULARS দিয়ে ইনিশিয়ালাইজ করা হলো যাতে সার্ভার রেন্ডারে খালি না দেখায়
+  const [filtered, setFiltered] = useState<Circular[]>(CIRCULARS);
+  const [totalP, setTotalP] = useState(0);
 
-  const totalP = filtered.reduce((s, c) => s + totalPosts(c), 0);
+  // ✅ ২. ফিল্টার এবং সর্টিং লজিক useEffect-এর ভেতরে সরানো হলো
+  useEffect(() => {
+    const result = CIRCULARS
+      .filter((c) => state.cat === 'all' || c.cat === state.cat)
+      .filter((c) => {
+        const q = state.q.trim().toLowerCase();
+        if (!q) return true;
+        return (c.org + c.orgEn + c.loc + c.posts.map((p) => p.n).join(' ')).toLowerCase().includes(q);
+      })
+      .sort((a, b) => {
+        if (state.sort === 'posts') return totalPosts(b) - totalPosts(a);
+        if (state.sort === 'new') return new Date(b.start).getTime() - new Date(a.start).getTime();
+        return new Date(a.end).getTime() - new Date(b.end).getTime();
+      });
+
+    setFiltered(result);
+    setTotalP(result.reduce((s, c) => s + totalPosts(c), 0));
+  }, [state.cat, state.q, state.sort]);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6" id="jobs">
@@ -48,7 +59,7 @@ export default function JobBoard() {
       <EligibilityChecker />
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        {/* ... (view toggle & search/filter same as before) ... */}
+        {/* View toggle */}
         <div className="inline-flex rounded-full border border-slate-200 bg-white p-1">
           <button
             onClick={() => update({ view: 'circ' })}
@@ -64,6 +75,7 @@ export default function JobBoard() {
           </button>
         </div>
 
+        {/* Search & Sort */}
         <div className="flex flex-wrap gap-2">
           <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm">
             <Search className="h-4 w-4 text-slate-400" />
@@ -102,7 +114,7 @@ export default function JobBoard() {
               circular={c} 
               index={i} 
               onDetail={setDetailId} 
-              onApply={setApplyId} // Pass setter
+              onApply={setApplyId} 
             />
           ))}
         </div>

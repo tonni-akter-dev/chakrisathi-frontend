@@ -7,16 +7,23 @@ const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ
 
 export const fmtDate = (iso: string): string => {
   const d = new Date(iso);
-  return `${bn(d.getDate())} ${MONTHS[d.getMonth()]}`;
+
+  return new Intl.DateTimeFormat('bn-BD', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'Asia/Dhaka',
+  }).format(d);
 };
 
 export const fmtTime = (iso: string): string => {
   const d = new Date(iso);
-  let h = d.getHours();
-  const m = d.getMinutes();
-  const p = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return `${bn(h)}:${bn(String(m).padStart(2, '0'))} ${p}`;
+
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Dhaka',
+  }).format(d);
 };
 
 export const totalPosts = (c: Circular): number =>
@@ -39,7 +46,12 @@ export function leftText(ms: number): { t: string; cls: 'safe' | 'warn' | 'close
   return { t: `${bn(h)}ঘ ${bn(m)}মি`, cls: 'warn' };
 }
 
+// utils/helpers.ts
+
 export function progress(c: Circular): number {
+  // ✅ ADD THIS GUARD: Stop evaluation during server pre-rendering
+  if (typeof window === 'undefined') return 0; 
+  
   const s = new Date(c.start).getTime();
   const e = new Date(c.end).getTime();
   return Math.max(0, Math.min(100, ((Date.now() - s) / (e - s)) * 100));
