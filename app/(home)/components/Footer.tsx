@@ -11,7 +11,7 @@ export default function Footer() {
               <div className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600">
                 <span className="text-lg font-bold text-white">চ</span>
               </div>
-              <div className="text-[17px] font-semibold tracking-tight">চাকরি<span className="text-brand-400">সাথী</span></div>
+              <div className="text-[17px] font-semibold tracking-tight">সোনার <span className="text-brand-400">হরিণ</span></div>
             </Link>
             <p className="mt-4 text-sm leading-relaxed">
               বাংলাদেশের তরুণদের সরকারি চাকরির বিশ্বস্ত সঙ্গী। সার্কুলার, আবেদন সহায়তা ও প্রস্তুতি — সব এক জায়গায়।
@@ -48,7 +48,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-12 flex flex-wrap justify-between gap-3 border-t border-white/10 pt-5 text-xs">
-          <span>© ২০২৬ চাকরিসাথী। সর্বস্বত্ব সংরক্ষিত।</span>
+          <span>© ২০২৬ সোনার হরিণ। সর্বস্বত্ব সংরক্ষিত।</span>
           <span>আবেদনের আগে মূল বিজ্ঞপ্তি যাচাই করুন।</span>
         </div>
       </div>

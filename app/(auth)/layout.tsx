@@ -16,7 +16,7 @@ export default function AuthLayout({
             <span className="text-base font-bold text-white">চ</span>
           </div>
           <span className="text-[17px] font-semibold tracking-tight text-slate-900">
-            চাকরি<span className="text-brand-600">সাথী</span>
+            সোনার <span className="text-brand-600"> হরিণ</span>
           </span>
         </Link>
         
@@ -36,7 +36,7 @@ export default function AuthLayout({
 
       {/* Minimal Footer */}
       <footer className="py-6 text-center text-xs text-slate-500">
-        <p>© ২০২৬ চাকরি সাথী। সর্বস্বত্ব সংরক্ষিত।</p>
+        <p>© ২০২৬ সোনার হরিণ। সর্বস্বত্ব সংরক্ষিত।</p>
       </footer>
       
     </div>

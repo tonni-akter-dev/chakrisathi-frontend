@@ -21,7 +21,7 @@ export default function Sidebar() {
           <ShieldCheck className="h-5 w-5" />
         </div>
         <div>
-          <div className="text-sm font-bold text-slate-900">চাকরি সাথী</div>
+          <div className="text-sm font-bold text-slate-900">সোনার হরিণ</div>
           <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Admin Panel</div>
         </div>
       </div>

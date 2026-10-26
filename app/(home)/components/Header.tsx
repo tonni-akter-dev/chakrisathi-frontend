@@ -26,7 +26,7 @@ export default function Header() {
             <span className="text-lg font-bold text-white">চ</span>
           </div>
           <div className="text-[17px] font-semibold tracking-tight text-slate-900">
-            চাকরি<span className="text-brand-600">সাথী</span>
+            সোনার <span className="text-brand-600">হরিণ</span>
           </div>
         </Link>
 
