@@ -22,9 +22,7 @@ export default function Header() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600">
-            <span className="text-lg font-bold text-white">চ</span>
-          </div>
+         
           <div className="text-[17px] font-semibold tracking-tight text-slate-900">
             সোনার <span className="text-brand-600">হরিণ</span>
           </div>
