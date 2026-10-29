@@ -1,50 +1,67 @@
-'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Phone, User, ArrowRight } from 'lucide-react';
-import { toast } from 'react-toastify';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Lock, Phone, User, ArrowRight, Mail } from "lucide-react";
+import { toast } from "react-toastify";
+import { useRegisterMutation } from "@/app/redux/features/apis/auth-api";
 
 export default function RegisterPage() {
   const router = useRouter();
-  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleRegister = (e: React.FormEvent) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [register, { isLoading }] = useRegisterMutation();
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error('পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না!');
-      return;
+      return toast.error("পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না!");
     }
-
     if (phone.length !== 11) {
-      toast.error('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন!');
-      return;
+      return toast.error("সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন!");
     }
 
-    setIsLoading(true);
+    try {
+      const payload = {
+        name,
+        email,
+        phone,
+        password,
+      };
 
-    // Demo registration simulation
-    setTimeout(() => {
-      setIsLoading(false);
-      localStorage.setItem('cs_user', JSON.stringify({ phone, name }));
-      toast.success('সফলভাবে রেজিস্ট্রেশন সম্পন্ন হয়েছে!');
-      router.push('/'); // Home page e pathao
-    }, 1500);
+      // API Call
+      const response = await register(payload).unwrap();
+      console.log(response);
+      
+      setName("");
+      setEmail("");
+      setPhone("");
+      setPassword("");
+      setConfirmPassword("");
+
+      toast.success("সফলভাবে রেজিস্ট্রেশন সম্পন্ন হয়েছে!");
+
+      router.push("/login");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        err?.data?.msg || "রেজিস্ট্রেশন ব্যর্থ হয়েছে! আবার চেষ্টা করুন।",
+      );
+    }
   };
 
   return (
-    <div className="w-full max-w-[420px] my-6">
+    <div className="w-full max-w-105 my-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-        
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             নতুন অ্যাকাউন্ট খুলুন
@@ -55,10 +72,11 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4">
-          
           {/* Full Name */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">পূর্ণ নাম</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+              পূর্ণ নাম
+            </label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                 <User className="h-4 w-4 text-slate-400" />
@@ -74,9 +92,31 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {/* Email */}
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+              ইমেইল
+            </label>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <Mail className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+                className="block w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
+              />
+            </div>
+          </div>
+
           {/* Phone */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">মোবাইল নম্বর</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+              মোবাইল নম্বর
+            </label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                 <Phone className="h-4 w-4 text-slate-400" />
@@ -94,13 +134,15 @@ export default function RegisterPage() {
 
           {/* Password */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">পাসওয়ার্ড</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+              পাসওয়ার্ড
+            </label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                 <Lock className="h-4 w-4 text-slate-400" />
               </div>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -113,20 +155,26 @@ export default function RegisterPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">কনফার্ম পাসওয়ার্ড</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+              কনফার্ম পাসওয়ার্ড
+            </label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                 <Lock className="h-4 w-4 text-slate-400" />
               </div>
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -139,7 +187,11 @@ export default function RegisterPage() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
               >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -165,12 +217,14 @@ export default function RegisterPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-600">
-          আগে থেকেই অ্যাকাউন্ট আছে?{' '}
-          <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+          আগে থেকেই অ্যাকাউন্ট আছে?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+          >
             লগইন করুন
           </Link>
         </p>
-
       </div>
     </div>
   );

@@ -1,37 +1,71 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Phone, ArrowRight } from 'lucide-react';
-import { useApp } from '@/utils/AppContext';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie'; // 💡 js-cookie ইমপোর্ট করুন
+import { useLoginMutation } from '@/app/redux/features/apis/auth-api';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { showToast } = useApp();
   
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   
   // State for form inputs
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-    // Demo login simulation (API call er poriborte)
-    setTimeout(() => {
-      setIsLoading(false);
-      // LocalStorage e dummy user save kora holo
-      localStorage.setItem('cs_user', JSON.stringify({ phone, name: 'Demo User' }));
-      showToast('সফলভাবে লগইন হয়েছে!');
-      router.push('/'); // Home page e pathao
-    }, 1500);
+  // RTK Query Hook
+  const [login, { isLoading }] = useLoginMutation();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const payload = { email, password };
+      const response = await login(payload).unwrap();
+
+      // 💡 টোকেন সেভ করা (কুকি এবং লোকাল স্টোরেজ দুটোতেই)
+      if (response.token) {
+        // ১. কুকিতে টোকেন সেভ করা (মিডলওয়্যারে কাজে লাগবে)
+        Cookies.set('token', response.token, { 
+          expires: 7, // ৭ দিন পর এক্সপায়ার হবে
+          secure: process.env.NODE_ENV === 'production', // প্রোডাকশনে HTTPS-এ কাজ করবে
+          sameSite: 'strict' 
+        });
+        
+        // ২. ইউজার ডাটা লোকাল স্টোরেজে সেভ করা (ইউআই-তে দেখানোর জন্য)
+        localStorage.setItem('user', JSON.stringify(response.user));
+        
+        // ৩. (ঐচ্ছিক) যদি ইউজার ডাটাও কুকিতে রাখতে চান
+        // Cookies.set('user', JSON.stringify(response.user), { expires: 7 });
+      }
+
+      // সফল মেসেজ
+      toast.success('সফলভাবে লগইন হয়েছে!');
+      
+      // রিডাইরেক্ট স্টেট অন করা হলো
+      setIsRedirecting(true);
+
+      // ১.৫ সেকেন্ড পর রিডাইরেক্ট হবে
+      setTimeout(() => {
+        router.push('/'); 
+        router.refresh(); // 💡 মিডলওয়্যার যাতে নতুন কুকি রিড করতে পারে তাই refresh
+      }, 1500);
+
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      toast.error(err?.data?.msg || 'লগইন ব্যর্থ হয়েছে! ইমেইল ও পাসওয়ার্ড চেক করুন।');
+      setIsRedirecting(false); 
+    }
   };
 
   return (
-    <div className="w-full max-w-[420px]">
+    <div className="w-full max-w-105">
       
       {/* Main Card */}
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
@@ -49,22 +83,23 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           
-          {/* Phone Input */}
+          {/* Email Input */}
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-              মোবাইল নম্বর
+              ইমেইল
             </label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Phone className="h-4 w-4 text-slate-400" />
+                <Mail className="h-4 w-4 text-slate-400" />
               </div>
               <input
-                type="tel"
+                type="email"
                 required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="01XXXXXXXXX"
-                className="block w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
+                disabled={isRedirecting}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+                className="block w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 disabled:bg-slate-50 disabled:text-slate-500"
               />
             </div>
           </div>
@@ -86,15 +121,17 @@ export default function LoginPage() {
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
+                disabled={isRedirecting}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="block w-full rounded-xl border border-slate-200 py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
+                className="block w-full rounded-xl border border-slate-200 py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 disabled:bg-slate-50 disabled:text-slate-500"
               />
               <button
                 type="button"
+                disabled={isRedirecting}
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
+                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 disabled:opacity-50"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -104,13 +141,18 @@ export default function LoginPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isRedirecting}
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-70"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 লগইন হচ্ছে...
+              </span>
+            ) : isRedirecting ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                রিডাইরেক্ট হচ্ছে...
               </span>
             ) : (
               <>
