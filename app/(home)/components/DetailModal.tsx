@@ -1,120 +1,219 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ExternalLink, X } from 'lucide-react';
-import { CIRCULARS } from '@/utils/data';
-import { bn, catCount, fmtDate, fmtTime, totalPosts, timeLeft } from '@/utils/helpers';
+import { X, MapPin, ExternalLink } from 'lucide-react';
 
 interface Props {
-  id: string | null;
+  circular: any | null;
   onClose: () => void;
 }
 
-export default function DetailModal({ id, onClose }: Props) {
-  const c = CIRCULARS.find((x) => x.id === id);
+export default function DetailModal({ circular: c, onClose }: Props) {
+  // 💡 কাউন্টডাউন টাইমারের জন্য স্টেট
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    if (!c) return;
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const end = new Date(c.end).getTime();
+      const distance = end - now;
+
+      if (distance > 0) {
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000),
+        });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [c]);
+
   if (!c) return null;
-  const ms = timeLeft(c);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('bn-BD', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleTimeString('bn-BD', {
+      hour: 'numeric', minute: '2-digit'
+    });
+  };
+
+  // বাংলা সংখ্যা কনভার্টার
+  const toBn = (num: number | string) => {
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return num.toString().replace(/\d/g, (d) => bnDigits[parseInt(d)]);
+  };
+
+  const totalVacancies = c.total || c.posts?.reduce((sum: number, p: any) => sum + (Number(p.v) || 0), 0) || 0;
+  const isActive = new Date(c.end) > new Date();
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative max-h-[92vh] w-full max-w-3xl overflow-auto rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <button className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-700 shadow-sm hover:bg-white" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </button>
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div 
+        className="relative w-full max-w-4xl max-h-[95vh] flex flex-col rounded-2xl bg-[#fafafa] shadow-2xl overflow-hidden" 
+        onClick={(e) => e.stopPropagation()}>
+        
+        {/* ================= হেডার সেকশন (টিল গ্রেডিয়েন্ট) ================= */}
+        <div className="relative bg-linear-to-br from-[#0E9F8E] to-[#1D5B5A] p-6 sm:p-8 text-white overflow-hidden flex-none">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10" />
+            <button 
+            onClick={onClose} 
+            className="absolute right-4 top-4 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-slate-800 shadow-md hover:bg-slate-100 transition">
+            <X className="h-5 w-5" />
+          </button>
 
-        {/* Header */}
-        <div className="relative overflow-hidden rounded-t-2xl bg-slate-900 px-7 py-6 text-white">
-          <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/10" />
-          <div className="relative flex items-center gap-4">
-            <div className="grid h-12 w-12 place-items-center rounded-xl border border-white/30 bg-white/20 font-bold" style={{ background: c.color }}>
-              {c.ab}
+          <div className="relative flex items-start gap-4 mb-6">
+            <div className="grid h-14 w-16 flex-none place-items-center rounded-lg border-2 border-white/40 bg-white/10 font-bold tracking-widest text-white backdrop-blur-sm text-lg">
+              {c.ab || 'JOB'}
             </div>
             <div>
-              <h3 className="text-xl font-semibold">{c.org}</h3>
-              <p className="text-sm text-white/80">{c.orgEn} · 📍 {c.loc}</p>
+              <h1 className="text-2xl font-bold">{c.org}</h1>
+              <p className="text-sm text-white/80 mt-1 flex items-center gap-1.5">
+                {c.orgEn} <span>•</span> <MapPin className="h-3.5 w-3.5" /> {c.loc}
+              </p>
             </div>
           </div>
-          <div className="relative mt-4 flex flex-wrap gap-2">
-            {ms > 0 ? (
-              <span className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-medium">
-                শেষ: {fmtDate(c.end)}, {fmtTime(c.end)}
-              </span>
-            ) : (
-              <span className="rounded-lg bg-red-500/80 px-3 py-1.5 text-sm font-medium">আবেদন শেষ</span>
-            )}
-            <span className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-medium">{bn(totalPosts(c))}টি পদ</span>
+
+          {/* কাউন্টডাউন বক্স */}
+          {isActive ? (
+            <div className="relative grid grid-cols-4 gap-3 max-w-sm">
+              <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
+                <div className="text-xl font-bold">{toBn(timeLeft.days)}</div>
+                <div className="text-[10px] text-white/70">দিন</div>
+              </div>
+              <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
+                <div className="text-xl font-bold">{toBn(timeLeft.hours)}</div>
+                <div className="text-[10px] text-white/70">ঘণ্টা</div>
+              </div>
+              <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
+                <div className="text-xl font-bold">{toBn(timeLeft.minutes)}</div>
+                <div className="text-[10px] text-white/70">মিনিট</div>
+              </div>
+              <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
+                <div className="text-xl font-bold">{toBn(timeLeft.seconds)}</div>
+                <div className="text-[10px] text-white/70">সেকেন্ড</div>
+              </div>
+            </div>
+          ) : (
+            <div className="inline-block rounded-lg bg-red-500/80 px-4 py-2 font-bold">
+              আবেদন শেষ
+            </div>
+          )}
+        </div>
+
+        {/* ================= স্ক্রলযোগ্য বডি ================= */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+          
+          {/* তথ্য গ্রিড */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
+              <p className="text-xs text-slate-500 font-medium mb-1">আবেদন শুরু</p>
+              <p className="text-sm font-bold text-slate-900">{formatDate(c.start)}, {formatTime(c.start)}</p>
+            </div>
+            <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
+              <p className="text-xs text-slate-500 font-medium mb-1">আবেদনের শেষ</p>
+              <p className="text-sm font-bold text-slate-900">{formatDate(c.end)}, {formatTime(c.end)}</p>
+            </div>
+            <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
+              <p className="text-xs text-slate-500 font-medium mb-1">মোট পদ</p>
+              <p className="text-sm font-bold text-slate-900">{toBn(c.cats || c.posts?.length || 0)} ক্যাটাগরি • {toBn(totalVacancies)}টি পদ</p>
+            </div>
+            <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
+              <p className="text-xs text-slate-500 font-medium mb-1">বয়সসীমা</p>
+              <p className="text-sm font-bold text-slate-900">{c.age?.note || 'বিজ্ঞপ্তি দেখুন'}</p>
+            </div>
+            <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
+              <p className="text-xs text-slate-500 font-medium mb-1">কোথায় আবেদন করতে পারবে</p>
+              <p className="text-sm font-bold text-slate-900">{c.district || 'সকল জেলা'}</p>
+            </div>
+            <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
+              <p className="text-xs text-slate-500 font-medium mb-1">আমাদের সার্ভিস চার্জ</p>
+              <p className="text-sm font-bold text-slate-900">৳১০০ থেকে + SMS ৳১৫/পদ</p>
+            </div>
+          </div>
+
+          {/* পদের তালিকা */}
+          <h3 className="text-lg font-bold text-slate-900 mb-4">পদের তালিকা</h3>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white mb-4">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-[#f8f5ff] border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
+                <tr>
+                  <th className="px-4 py-3">পদের নাম ও যোগ্যতা</th>
+                  <th className="px-4 py-3 text-center">পদ</th>
+                  <th className="px-4 py-3 text-center">গ্রেড ও বেতন</th>
+                  <th className="px-4 py-3 text-center">সরকারি ফি</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {c.posts?.map((p: any, idx: number) => (
+                  <tr key={idx} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-4">
+                      <div className="font-bold text-slate-900">{p.n}</div>
+                      <div className="text-xs text-slate-500 mt-1">{p.q || 'বিজ্ঞপ্তি দেখুন'}</div>
+                    </td>
+                    <td className="px-4 py-4 text-center font-semibold text-slate-700">
+                      {toBn(p.v || 0)}টি
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <div className="font-semibold text-slate-800">{toBn(p.g || '')}তম গ্রেড</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{p.sal}</div>
+                    </td>
+                    <td className="px-4 py-4 text-center font-bold text-slate-900">
+                      ৳{toBn(p.fee || 112)}
+                    </td>
+                  </tr>
+                ))}
+                {(!c.posts || c.posts.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                      পদগুলোর বিস্তারিত জানতে মূল বিজ্ঞপ্তি দেখুন।
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Body */}
-        <div className="px-7 py-6">
-          <div className="grid grid-cols-2 gap-2.5">
-            {[
-              ['আবেদন শুরু', `${fmtDate(c.start)}, ${fmtTime(c.start)}`],
-              ['আবেদনের শেষ', `${fmtDate(c.end)}, ${fmtTime(c.end)}`],
-              ['মোট পদ', `${bn(catCount(c))} ক্যাটাগরি · ${bn(totalPosts(c))}টি`],
-              ['বয়সসীমা', c.age?.note ?? 'বিজ্ঞপ্তি দেখুন'],
-              ['কারা পারবে', c.district],
-              ['সার্ভিস চার্জ', '৳১০০ + SMS ৳১৫/পদ'],
-            ].map(([k, v]) => (
-              <div key={k} className="rounded-xl bg-slate-50 px-3.5 py-2.5">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{k}</div>
-                <div className="mt-0.5 text-sm font-medium text-slate-900">{v}</div>
-              </div>
-            ))}
-          </div>
-
-          {c.note && (
-            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">📌 {c.note}</div>
-          )}
-
-          <h4 className="mb-3 mt-6 text-base font-semibold">পদের তালিকা</h4>
-          {c.posts.length ? (
-            <div className="overflow-hidden rounded-xl border border-slate-200">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-3 py-2">পদ ও যোগ্যতা</th>
-                    <th className="px-3 py-2">পদ</th>
-                    <th className="px-3 py-2">গ্রেড ও বেতন</th>
-                    <th className="px-3 py-2">ফি</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {c.posts.map((p) => (
-                    <tr key={p.n} className="border-t border-slate-100">
-                      <td className="px-3 py-2.5 font-medium">
-                        {p.n}
-                        {p.q && <div className="mt-0.5 text-xs font-normal text-slate-500">{p.q}</div>}
-                      </td>
-                      <td className="px-3 py-2.5">{p.v ? `${bn(p.v)}টি` : '—'}</td>
-                      <td className="px-3 py-2.5">
-                        {p.g ? (
-                          <>
-                            {bn(p.g)}তম গ্রেড
-                            <div className="text-xs text-slate-500">৳{p.sal}</div>
-                          </>
-                        ) : 'বিজ্ঞপ্তি দেখুন'}
-                      </td>
-                      <td className="px-3 py-2.5">{p.fee ? `৳${bn(p.fee)}` : '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              এই সার্কুলারে {bn(catCount(c))} ক্যাটাগরিতে {bn(totalPosts(c))}টি পদ আছে। পদের নাম মূল বিজ্ঞপ্তিতে দেখুন।
-            </div>
-          )}
-
-          <div className="mt-6 flex flex-wrap gap-2">
-            <a href={c.link} target="_blank" rel="noopener" className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300">
-              <ExternalLink className="h-4 w-4" /> মূল বিজ্ঞপ্তি
-            </a>
-            <Link href={`/apply?c=${c.id}`} onClick={onClose} className="flex-1 rounded-lg bg-brand-600 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-brand-700">
+        {/* ================= ফুটার বাটন (ফিক্সড) ================= */}
+        <div className="flex-none flex gap-3 p-4 bg-white border-t border-slate-100">
+          <Link
+            href={c.pdfUrl || c.link || '#'} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="flex-1 flex items-center justify-center gap-2 rounded-full border-2 border-[#7c3aed] px-4 py-3 text-sm font-bold text-[#7c3aed] hover:bg-[#f3e8ff] transition">
+            <ExternalLink className="h-4 w-4" /> মূল বিজ্ঞপ্তি / নিজে আবেদন
+          </Link>
+          {isActive && c.allowServiceApply !== false ? (
+            <Link 
+              href={`/apply/${c._id || c.id}`} 
+              onClick={onClose}
+              className="flex-1 flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-pink-500 to-orange-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-orange-500/30 hover:scale-[1.02] transition"
+            >
               আবেদন করুন
             </Link>
-          </div>
+          ) : (
+            <button 
+              disabled 
+              className="flex-1 rounded-full bg-slate-200 px-4 py-3 text-sm font-bold text-slate-400 cursor-not-allowed"
+            >
+              আবেদন শেষ
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ export const tags = {
   contacts: "Contacts",
   profile: "Profile",
   supportTickets: "SupportTickets",
+  circular: "Circular",
  
 } as const;
 

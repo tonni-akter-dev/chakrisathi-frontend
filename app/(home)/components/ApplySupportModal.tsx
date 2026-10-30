@@ -1,41 +1,72 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2 } from 'lucide-react';
-import { CIRCULARS } from '@/utils/data';
-import { useApp } from '@/utils/AppContext';
+import { X, CheckCircle2, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
+// 💡 আপনার তৈরি করা Application API হুক ইমপোর্ট করুন
+// import { useAddApplicationMutation } from '@/app/redux/features/apis/application-api';
 
 interface Props {
-  id : string | null;
+  // 💡 id এর বদলে পুরো circular অবজেক্ট নিন
+  circular: any | null; 
   onClose: () => void;
 }
 
-export default function ApplySupportModal({ id , onClose }: Props) {
-  const { showToast } = useApp();
+export default function ApplySupportModal({ circular, onClose }: Props) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // ফর্ম ডাটা ধরার জন্য স্টেট
+  const [formData, setFormData] = useState({
+    selectedPost: '',
+    name: '',
+    phone: '',
+    age: '',
+    education: '',
+    district: ''
+  });
 
-  // Reset state when modal opens
   useEffect(() => {
-    if (id ) {
+    if (circular) {
       setIsSubmitted(false);
-      setIsLoading(false);
+      setFormData({ selectedPost: '', name: '', phone: '', age: '', education: '', district: '' });
     }
-  }, [id ]);
+  }, [circular]);
 
-  if (!id ) return null;
+  if (!circular) return null;
 
-  const circular = CIRCULARS.find((c) => c.id === id );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API request
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const payload = {
+        circularId: circular._id || circular.id,
+        circularOrg: circular.org,
+        posts: [formData.selectedPost || 'any'],
+        name: formData.name,
+        phone: formData.phone,
+        age: Number(formData.age),
+        education: formData.education,
+        address: formData.district, 
+        amount: 112, 
+        status: 'pending',
+      };
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       setIsSubmitted(true);
-      showToast('অনুরোধ সফলভাবে পাঠানো হয়েছে!');
-    }, 1200);
+      toast.success('অনুরোধ সফলভাবে পাঠানো হয়েছে!');
+    } catch (error) {
+      console.error(error);
+      toast.error('অনুরোধ পাঠাতে সমস্যা হয়েছে! আবার চেষ্টা করুন।');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -58,32 +89,30 @@ export default function ApplySupportModal({ id , onClose }: Props) {
             <div className="px-6 pt-6 pb-4 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">আবেদনে সাহায্য নিন</h2>
               <p className="mt-1 text-sm text-slate-500">
-                {circular?.org || 'সার্কুলার'} — আমাদের টিম ২৪ ঘণ্টার মধ্যে যোগাযোগ করবে।
+                {circular.title || circular.org} — আমাদের টিম ২৪ ঘণ্টার মধ্যে যোগাযোগ করবে।
               </p>
             </div>
 
             {/* Scrollable Form Body */}
             <div className="p-6 overflow-y-auto custom-scrollbar">
               <form id="support-form" onSubmit={handleSubmit} className="space-y-4">
-                
-                {/* Select Post */}
+
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">কোন পদে আবেদন করতে চাও?</label>
-                  <select required className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
-                    <option value="">এখনো ঠিক করিনি — পরামর্শ চাই</option>
-                    {CIRCULARS.map((c) => (
-                      <optgroup key={c.id} label={c.org}>
-                        {c.posts.length > 0 ? (
-                          c.posts.map((p) => (
-                            <option key={p.n} value={p.n}>
-                              {p.n} — {c.orgEn}
-                            </option>
-                          ))
-                        ) : (
-                          <option value="any">যেকোনো পদ — {c.orgEn}</option>
-                        )}
-                      </optgroup>
+                  <select 
+                    name="selectedPost"
+                    required 
+                    value={formData.selectedPost}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                  >
+                    <option value="">পদ বাছাই করুন</option>
+                    {circular.posts?.map((p: any, index: number) => (
+                      <option key={index} value={p.n}>
+                        {p.n} ({p.v} টি পদ)
+                      </option>
                     ))}
+                    <option value="any">এখনো ঠিক করিনি — পরামর্শ চাই</option>
                   </select>
                 </div>
 
@@ -92,7 +121,10 @@ export default function ApplySupportModal({ id , onClose }: Props) {
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">পূর্ণ নাম</label>
                   <input 
                     type="text" 
+                    name="name"
                     required 
+                    value={formData.name}
+                    onChange={handleChange}
                     placeholder="যেমন: রাকিব হাসান" 
                     className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100" 
                   />
@@ -103,8 +135,11 @@ export default function ApplySupportModal({ id , onClose }: Props) {
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">মোবাইল নম্বর</label>
                   <input 
                     type="tel" 
+                    name="phone"
                     required 
                     pattern="01[3-9][0-9]{8}" 
+                    value={formData.phone}
+                    onChange={handleChange}
                     placeholder="01XXXXXXXXX" 
                     className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100" 
                   />
@@ -115,9 +150,12 @@ export default function ApplySupportModal({ id , onClose }: Props) {
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">বয়স</label>
                   <input 
                     type="number" 
+                    name="age"
                     required 
                     min="15" 
                     max="40" 
+                    value={formData.age}
+                    onChange={handleChange}
                     placeholder="১৫–৩২" 
                     className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100" 
                   />
@@ -126,7 +164,13 @@ export default function ApplySupportModal({ id , onClose }: Props) {
                 {/* Education */}
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">শিক্ষাগত যোগ্যতা</label>
-                  <select required defaultValue="" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+                  <select 
+                    name="education"
+                    required 
+                    value={formData.education}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                  >
                     <option value="" disabled>বেছে নিন</option>
                     <option value="1">অষ্টম শ্রেণি</option>
                     <option value="2">এসএসসি</option>
@@ -141,7 +185,10 @@ export default function ApplySupportModal({ id , onClose }: Props) {
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">স্থায়ী জেলা</label>
                   <input 
                     type="text" 
+                    name="district"
                     required 
+                    value={formData.district}
+                    onChange={handleChange}
                     placeholder="যেমন: ময়মনসিংহ" 
                     className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100" 
                   />
@@ -163,15 +210,16 @@ export default function ApplySupportModal({ id , onClose }: Props) {
                 type="submit" 
                 form="support-form" 
                 disabled={isLoading}
-                className="flex-[2] rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition disabled:opacity-70 flex justify-center items-center"
+                className="flex-2 rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition disabled:opacity-70 flex justify-center items-center gap-2"
               >
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isLoading ? 'অপেক্ষা করুন...' : 'অনুরোধ পাঠান'}
               </button>
             </div>
           </>
         ) : (
           /* Success View */
-          <div className="p-8 text-center flex flex-col items-center justify-center">
+          <div className="p-8 text-center flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
             <div className="mb-4 grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-emerald-500">
               <CheckCircle2 className="h-8 w-8" />
             </div>

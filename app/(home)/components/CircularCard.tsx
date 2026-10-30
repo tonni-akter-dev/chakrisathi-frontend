@@ -1,149 +1,118 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useState, useEffect } from 'react';
-import { Heart, MapPin } from 'lucide-react';
-import type { Circular } from '@/utils/types';
-import { bn, catCount, fmtDate, fmtTime, leftText, progress, timeLeft, totalPosts } from '@/utils/helpers';
-import { useApp } from '@/utils/AppContext';
+import { MapPin, Heart} from 'lucide-react';
+import Link from 'next/link';
 
 interface Props {
-  circular: Circular;
+  circular: any;
   index: number;
-  onDetail: (id: string) => void;
-  onApply: (id: string) => void;
+  onDetail: () => void;
+  onApply: () => void;
 }
 
-export default function CircularCard({ circular: c, index, onDetail, onApply }: Props) {
-  const { state, toggleSave } = useApp();
+export default function CircularCard({ circular: c, index, onDetail }: Props) {
+  const totalPosts = c.total || c.posts?.length || 0;
+  const totalCats = c.cats || 1;
   
-  const [isMounted, setIsMounted] = useState(false);
-  
-  // ✅ 1. Group all time-based calculations into a single state object
-  const [timeData, setTimeData] = useState({
-    lt: { t: '', cls: 'safe' as 'safe' | 'warn' | 'closed' },
-    isNew: false,
-    isOpen: true,
-    prog: 0,
-  });
-
-  // ✅ 2. Calculate everything safely inside useEffect (this runs only in the browser)
-  useEffect(() => {
-    setIsMounted(true);
-    
-    const tl = timeLeft(c);
-    const now = Date.now();
-    
-    setTimeData({
-      lt: leftText(tl),
-      isNew: now - new Date(c.start).getTime() < 5 * 864e5,
-      isOpen: tl > 0,
-      prog: progress(c),
-    });
-  }, [c]);
-
-  const tp = totalPosts(c);
-  const isSaved = state.saved.includes(c.id);
-
   return (
-    <article
-      className="relative flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
-      style={{ animationDelay: `${index * 40}ms` }}
+    <div 
+      className="flex flex-col relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+      style={{ animationDelay: `${index * 50}ms` }}
     >
-      <button
-        onClick={() => toggleSave(c.id)}
-        className={`absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full transition ${
-          isSaved ? 'bg-rose-50 text-rose-500' : 'bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500'
-        }`}
-      >
-        <Heart className={`h-4 w-4 ${isSaved ? 'fill-rose-500' : ''}`} />
-      </button>
+      {/* 💡 কার্ডের ওপরের কালারফুল বর্ডার */}
+      <div className="h-1.5 w-full bg-linear-to-r from-teal-400 to-[#7c3aed]" />
 
-      <div className="flex items-start gap-3 pr-10">
-        <div className="grid h-12 w-12 flex-none place-items-center rounded-xl text-sm font-bold text-white" style={{ background: c.color }}>
-          {c.ab}
+      <div className="p-5 flex-1 flex flex-col">
+        {/* হেডার: লোগো, প্রতিষ্ঠান, লোকেশন এবং উইশলিস্ট আইকন */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex gap-3 items-center">
+            <div 
+              className="grid h-12 w-12 flex-none place-items-center rounded-lg text-white font-bold text-lg shadow-sm"
+              style={{ backgroundColor: c.color || '#7c3aed' }}
+            >
+              {c.ab || 'JOB'}
+            </div>
+            <div>
+              <h3 className="text-[15px] font-bold text-slate-900 leading-tight line-clamp-1">{c.org}</h3>
+              <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" /> {c.loc || 'সকল জেলা'}
+              </p>
+            </div>
+          </div>
+          <button className="text-slate-300 hover:text-rose-500 transition">
+            <Heart className="h-5 w-5" />
+          </button>
         </div>
-        <div className="min-w-0">
-          <h3 className="text-[15px] font-semibold leading-tight text-slate-900">{c.org}</h3>
-          <div className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
-            <MapPin className="h-3 w-3" /> {c.loc}
+
+        {/* জেলা ব্যাজ */}
+        <div className="mb-4">
+          <span className="inline-block rounded-md bg-[#f3e8ff] px-2 py-1 text-[10px] font-bold text-[#7c3aed]">
+            {c.scope === 'national' ? 'সকল জেলা' : 'নির্দিষ্ট জেলা'}
+          </span>
+        </div>
+
+        {/* পোস্টের ট্যাগসমূহ */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {c.posts?.slice(0, 3).map((post: any, idx: number) => (
+            <span key={idx} className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
+              {post.n}
+            </span>
+          ))}
+          {c.posts?.length > 3 && (
+            <span className="rounded-md border border-dashed border-[#d8b4fe] bg-[#f3e8ff] px-2 py-1 text-[11px] font-bold text-[#7c3aed]">
+              +{c.posts.length - 3}টি পদ
+            </span>
+          )}
+          {(!c.posts || c.posts.length === 0) && (
+            <span className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
+              {totalCats} ক্যাটাগরির পদ — বিজ্ঞপ্তিত দেখুন
+            </span>
+          )}
+        </div>
+
+        {/* 💡 স্ট্যাটস বক্স (মাঝখানে) */}
+        <div className="rounded-xl bg-[#f8f5ff] p-3 grid grid-cols-3 gap-2 text-center mb-5 mt-auto">
+          <div>
+            <div className="text-lg font-bold text-slate-900">{totalPosts}</div>
+            <div className="text-[10px] font-semibold text-slate-500">মোট পদ</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-slate-900">{totalCats}</div>
+            <div className="text-[10px] font-semibold text-slate-500">ক্যাটাগরি</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-slate-900">{totalPosts}</div>
+            <div className="text-[10px] font-semibold text-slate-500">নেড়ভার</div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {/* ✅ 3. Use timeData from state */}
-        {isMounted && timeData.isNew && (
-          <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-600">নতুন</span>
-        )}
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-          {c.scope === 'national' ? 'সকল জেলা' : 'জেলা'}
-        </span>
-        {isMounted && timeData.isOpen && (
-          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-            timeData.lt.cls === 'closed' ? 'bg-red-50 text-red-600' : timeData.lt.cls === 'warn' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
-          }`}>
-            {timeData.lt.t} বাকি
-          </span>
-        )}
-      </div>
+        {/* ডেডলাইন এবং প্রোগ্রেস বার */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center text-[11px] font-bold mb-2">
+            <span className="text-slate-700">শেষ: {new Date(c.end).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long' })}</span>
+            <span className="text-orange-500">৫ দিন ০ ঘণ্টা বাকি</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-full w-[60%] rounded-full bg-linear-to-r from-teal-400 via-amber-400 to-orange-500" />
+          </div>
+        </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {c.posts.slice(0, 2).map((p) => (
-          <span key={p.n} className="rounded-md border border-dashed border-slate-200 px-2 py-0.5 text-xs text-slate-600">
-            {p.n}
-          </span>
-        ))}
-        {c.posts.length > 2 && (
-          <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
-            +{bn(c.posts.length - 2)}টি পদ
-          </span>
-        )}
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-1.5 rounded-xl bg-slate-50 py-2.5 text-center text-xs">
-        <div>
-          <div className="font-semibold text-slate-900">{bn(tp)}</div>
-          <div className="text-[10px] text-slate-500">মোট পদ</div>
-        </div>
-        <div>
-          <div className="font-semibold text-slate-900">{bn(catCount(c))}</div>
-          <div className="text-[10px] text-slate-500">ক্যাটাগরি</div>
-        </div>
-        <div>
-          <div className="font-semibold text-slate-900">{fmtDate(c.end).split(' ')[0]}</div>
-          <div className="text-[10px] text-slate-500">{fmtDate(c.end).split(' ')[1]}</div>
-        </div>
-      </div>
-
-      <div className="mt-3">
-        <div className="flex justify-between text-xs text-slate-600">
-          <span>শেষ: {fmtDate(c.end)}, {fmtTime(c.end)}</span>
-        </div>
-        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-linear-to-r from-emerald-400 via-amber-400 to-orange-400"
-            style={{ width: `${isMounted ? timeData.prog : 0}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 flex gap-2">
-        <button onClick={() => onDetail(c.id)} className="flex-1 rounded-lg border border-slate-200 bg-white py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50">
-          বিস্তারিত
-        </button>
-        {(!isMounted || timeData.isOpen) ? (
+        {/* বাটনসমূহ */}
+        <div className="flex gap-2 mt-auto">
           <button 
-            onClick={() => onApply(c.id)} 
-            className="flex-1 rounded-lg bg-brand-600 py-2 text-center text-sm font-medium text-white hover:bg-brand-700"
+            onClick={onDetail}
+            className="flex-1 rounded-full border border-[#7c3aed] bg-white py-2.5 text-sm font-bold text-[#7c3aed] hover:bg-[#f3e8ff] transition"
           >
-            আবেদনে সাহায্য
+            বিস্তারিত
           </button>
-        ) : (
-          <span className="flex-1 cursor-not-allowed rounded-lg bg-slate-100 py-2 text-center text-sm font-medium text-slate-400">
-            আবেদন শেষ
-          </span>
-        )}
+          <Link href={`/apply/${c._id}`} className="flex-1 text-center rounded-full bg-[#7c3aed] py-2.5 text-sm font-bold text-white shadow-md hover:opacity-90 transition">
+            আবেদন করুন
+          </Link>
+          
+        </div>
       </div>
-    </article>
+    </div>
   );
 }

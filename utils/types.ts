@@ -19,6 +19,7 @@ export interface AgeLimit {
 }
 
 export interface Circular {
+  _id?: string; // 💡 এখানে '?' যুক্ত করা হয়েছে
   id: string;
   ab: string;
   color: string;

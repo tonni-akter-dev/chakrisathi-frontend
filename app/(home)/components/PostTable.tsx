@@ -44,6 +44,8 @@ export default function PostTable({ circulars }: Props) {
     return <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-slate-500">কোনো পদ পাওয়া যায়নি।</div>;
   }
 
+  console.log(rows)
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="hidden grid-cols-12 gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid">
@@ -73,7 +75,7 @@ export default function PostTable({ circulars }: Props) {
             {state.user ? fitHtml(r.fit) : fmtDate(r.c.end)}
           </div>
           <div className="md:col-span-2 flex justify-end">
-            <Link href={`/apply?c=${r.c.id}`} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700">
+            <Link href={`/apply/${r.c._id}`} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700">
               আবেদন
             </Link>
           </div>
