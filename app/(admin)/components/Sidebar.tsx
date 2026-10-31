@@ -42,11 +42,7 @@ export default function Sidebar() {
                 <item.icon className={`h-5 w-5 ${isActive ? 'text-brand-600' : 'text-slate-400'}`} />
                 {item.label}
               </div>
-              {item.badge && (
-                <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                  {item.badge}
-                </span>
-              )}
+             
             </Link>
           );
         })}

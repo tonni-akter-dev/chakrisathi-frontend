@@ -1,10 +1,18 @@
-import { Suspense } from 'react';
-import TrackDetailsPage from './TrackDetails'; 
+import React, { Suspense } from 'react'
+import TrackDetail from './TrackDetails'
 
-export default function Page() {
+const page = () => {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
-      <TrackDetailsPage />
-    </Suspense>
-  );
+    <div>
+        <Suspense
+        fallback={
+          <div className="hidden lg:block w-64 bg-white border-r border-slate-200"></div>
+        }
+      >
+        <TrackDetail />
+      </Suspense>
+    </div>
+  )
 }
+
+export default page

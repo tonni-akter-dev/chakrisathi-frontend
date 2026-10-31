@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import {  ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const STATUS_MAP: Record<string, { label: string, color: string, bg: string }> = {
   pending: { label: 'পেন্ডিং', color: 'text-amber-700', bg: 'bg-amber-100' },
@@ -11,6 +12,8 @@ const STATUS_MAP: Record<string, { label: string, color: string, bg: string }> =
 };
 
 export default function ApplicationTable({ data }: { data: any[] }) {
+  const router = useRouter();
+
   if (data.length === 0) {  
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-20 text-center">
@@ -32,29 +35,39 @@ export default function ApplicationTable({ data }: { data: any[] }) {
               <th className="px-5 py-4">সার্কুলার ও পদ</th>
               <th className="px-5 py-4">পেমেন্ট</th>
               <th className="px-5 py-4">অবস্থা</th>
-              <th className="px-5 py-4">ডেডলাইন</th>
+              <th className="px-5 py-4">তারিখ</th>
               <th className="px-5 py-4"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.map((app) => {
-              const st = STATUS_MAP[app.status];
+              // 💡 স্ট্যাটাস ম্যাপিং (যদি ব্যাকএন্ড থেকে নতুন স্ট্যাটাস আসে তবে ডিফল্ট pending দেখাবে)
+              const st = STATUS_MAP[app.status] || STATUS_MAP.pending;
+              
               return (
-                <tr key={app.id} className="group cursor-pointer hover:bg-slate-50/80">
+                <tr 
+                  key={app._id} 
+                  onClick={() => router.push(`/dashboard/applications/${app.applicationId}`)}
+                  className="group cursor-pointer hover:bg-slate-50/80 transition-colors"
+                >
                   <td className="px-5 py-4">
-                    <div className="font-bold text-slate-900">{app.id}</div>
-                    <div className="text-xs text-slate-500">{app.date}</div>
+                    <div className="font-bold text-slate-900">{app.applicationId}</div>
+                    <div className="text-xs text-slate-500">{app.paymentMethod}</div>
                   </td>
                   <td className="px-5 py-4">
                     <div className="font-semibold text-slate-900">{app.name}</div>
                     <div className="text-xs text-slate-500">{app.phone}</div>
                   </td>
                   <td className="px-5 py-4">
-                    <div className="font-medium text-slate-900">{app.circular}</div>
-                    <div className="truncate text-xs text-slate-500 max-w-[200px]">{app.posts}</div>
+                    <div className="font-medium text-slate-900">{app.circularOrg || 'N/A'}</div>
+                    <div className="truncate text-xs text-slate-500 max-w-50">
+                      {/* 💡 posts এখন অবজেক্টের অ্যারে, তাই p.name দিয়ে ম্যাপ করা হচ্ছে */}
+                      {app.posts?.map((p: any) => p.name).join(', ')}
+                    </div>
                   </td>
                   <td className="px-5 py-4">
                     <div className="font-bold text-slate-900">৳{app.amount}</div>
+                    <div className="text-xs text-slate-500">TrxID: {app.trxId}</div>
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${st.bg} ${st.color}`}>
@@ -62,12 +75,12 @@ export default function ApplicationTable({ data }: { data: any[] }) {
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className={`text-xs font-semibold ${app.deadline.includes('বাকি') ? 'text-rose-600' : 'text-slate-500'}`}>
-                      {app.deadline}
+                    <span className="text-xs font-semibold text-slate-600">
+                      {new Date(app.createdAt).toLocaleDateString('bn-BD')}
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-700">
+                    <button className="rounded-lg p-2 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-700 transition">
                       <ChevronRight className="h-4 w-4" />
                     </button>
                   </td>

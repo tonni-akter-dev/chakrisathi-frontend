@@ -1,10 +1,44 @@
-
-import { Activity, Megaphone } from 'lucide-react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+import { useState, useEffect } from 'react';
+import { Activity, Megaphone, Loader2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 import KpiCards from '../components/KpiCards';
 import TodoList from '../components/TodoList';
 import MoneyStats from '../components/MoneyStats';
 
 export default function AdminDashboard() {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const token = Cookies.get('token');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch');
+        const result = await res.json();
+        setData(result);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboardStats();
+  }, []);
+
+  if (isLoading) {
+    return <div className="flex h-[80vh] items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-brand-600" /></div>;
+  }
+
+  const kpis = data?.kpis || { total: 0, pending: 0, processing: 0, review: 0, completed: 0, rejected: 0 };
+  const money = data?.money || { totalCollected: 0, pendingPayment: 0 };
+  const circularStats = data?.circularStats || [];
+  const recentActivity = data?.recentActivity || [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -12,13 +46,15 @@ export default function AdminDashboard() {
         <p className="text-sm text-slate-500">স্বাগতম! এখানে আপনার সারসংক্ষেপ দেখুন।</p>
       </div>
 
-      {/* Top KPIs */}
-      <KpiCards />
+      {/* Top KPIs - 💡 data পাস করে দিচ্ছি */}
+      <KpiCards data={kpis} />
 
       {/* Middle Grid */}
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <TodoList />
-        <MoneyStats />
+        {/* 💡 recentActivity পাস করে দিচ্ছি */}
+        <TodoList data={recentActivity} />
+        {/* 💡 money পাস করে দিচ্ছি */}
+        <MoneyStats data={money} />
       </div>
 
       {/* Bottom Grid */}
@@ -30,20 +66,21 @@ export default function AdminDashboard() {
             <h3 className="text-base font-bold text-slate-900">সার্কুলার অনুযায়ী আবেদন</h3>
           </div>
           <div className="space-y-4">
-            {[
-              { name: 'WTMU', count: 45, percent: 80 },
-              { name: 'HBRI', count: 32, percent: 60 },
-              { name: 'TZ-3', count: 21, percent: 40 },
-              { name: 'DC Sherpur', count: 15, percent: 25 },
-            ].map((c) => (
-              <div key={c.name} className="flex items-center gap-3">
-                <span className="w-20 text-sm font-semibold text-slate-700">{c.name}</span>
-                <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${c.percent}%` }} />
+            {circularStats.length === 0 && <p className="text-sm text-slate-500">কোনো ডাটা নেই।</p>}
+            
+            {circularStats.map((c: any) => {
+              // 💡 শতকরা হিসাব অটোমেটিক বের হবে
+              const percent = kpis.total > 0 ? Math.round((c.count / kpis.total) * 100) : 0;
+              return (
+                <div key={c.name} className="flex items-center gap-3">
+                  <span className="w-24 text-sm font-semibold text-slate-700 truncate">{c.name}</span>
+                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-brand-500 transition-all duration-500" style={{ width: `${percent}%` }} />
+                  </div>
+                  <span className="w-8 text-right text-sm font-bold text-slate-900">{c.count}</span>
                 </div>
-                <span className="w-6 text-right text-sm font-bold text-slate-900">{c.count}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -54,18 +91,19 @@ export default function AdminDashboard() {
             <h3 className="text-base font-bold text-slate-900">সাম্প্রতিক কার্যক্রম</h3>
           </div>
           <ul className="space-y-4">
-            {[
-              { id: 'CS2310-AB12', name: 'রাকিব হাসান', action: 'আবেদন জমা দিয়েছেন', time: '১০ মিনিট আগে', color: 'bg-amber-500' },
-              { id: 'CS2310-CD34', name: 'সাদিয়া আক্তার', action: 'পেমেন্ট যাচাই সম্পন্ন', time: '১ ঘণ্টা আগে', color: 'bg-brand-500' },
-              { id: 'CS2310-EF56', name: 'মেহেদী রহমান', action: 'রিভিউ সম্পন্ন করেছেন', time: '২ ঘণ্টা আগে', color: 'bg-pink-500' },
-            ].map((item, i) => (
+            {recentActivity.length === 0 && <p className="text-sm text-slate-500">কোনো কার্যক্রম নেই।</p>}
+            
+            {recentActivity.map((item: any, i: number) => (
               <li key={i} className="flex gap-3">
-                <div className={`mt-1.5 h-2 w-2 flex-none rounded-full ${item.color}`} />
+                <div className={`mt-1.5 h-2 w-2 flex-none rounded-full ${
+                  item.status === 'pending' ? 'bg-amber-500' : 
+                  item.status === 'completed' ? 'bg-emerald-500' : 'bg-brand-500'
+                }`} />
                 <div>
                   <div className="text-sm text-slate-900">
-                    <span className="font-bold">{item.id}</span> · {item.name} — {item.action}
+                    <span className="font-bold">{item.applicationId}</span> · {item.name} — নতুন আবেদন
                   </div>
-                  <div className="text-xs text-slate-500">{item.time}</div>
+                  <div className="text-xs text-slate-500">{new Date(item.createdAt).toLocaleString('bn-BD')}</div>
                 </div>
               </li>
             ))}

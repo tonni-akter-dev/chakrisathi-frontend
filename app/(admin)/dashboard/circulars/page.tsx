@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { Megaphone, Calendar, Plus, Loader2, FileText } from 'lucide-react';
+import { Megaphone, Calendar, Plus, Loader2, FileText, Edit } from 'lucide-react'; // 💡 Edit আইকন ইমপোর্ট করুন
 import Link from 'next/link';
 import { useGetAllCircularsQuery } from '@/app/redux/features/apis/circular-api';
 
@@ -91,12 +91,22 @@ export default function CircularsPage() {
                 </div>
               </div>
 
+              {/* 💡 বাটন সেকশন */}
               <div className="mt-5 flex gap-2">
                 <Link 
-                  href={`/dashboard/circulars/${c.id || c._id}`} 
+                  href={`/dashboard/circulars/${c.id || c._id}/applications`} 
                   className="flex-1 text-center rounded-lg border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
                 >
                   আবেদন দেখুন
+                </Link>
+                
+                {/* 💡 নতুন এডিট বাটন */}
+                <Link 
+                  href={`/dashboard/circulars/edit/${c.id || c._id}`} 
+                  className="grid w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600 transition"
+                  title="Edit Circular"
+                >
+                  <Edit className="h-4 w-4" />
                 </Link>
               </div>
             </div>

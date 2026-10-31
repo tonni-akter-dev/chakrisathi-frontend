@@ -1,16 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useState } from 'react';
-import { Search, Filter, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, Download, Loader2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 import ApplicationTable from './ApplicationTable';
-
-// Dummy Data for Demo
-const MOCK_APPS = [
-  { id: 'CS2310-AB12', name: 'রাকিব হাসান', phone: '01711223344', circular: 'WTMU', posts: 'কম্পিউটার অপারেটর', amount: 215, status: 'pending', date: '২৪ অক্টো', deadline: '২ দিন বাকি' },
-  { id: 'CS2310-CD34', name: 'সাদিয়া আক্তার', phone: '01811223344', circular: 'HBRI', posts: 'উপ-সহকারী প্রকৌশলী', amount: 350, status: 'processing', date: '২৪ অক্টো', deadline: '৫ দিন বাকি' },
-  { id: 'CS2310-EF56', name: 'মেহেদী রহমান', phone: '01911223344', circular: 'TZ-3', posts: 'উচ্চমান সহকারী', amount: 180, status: 'review', date: '২৩ অক্টো', deadline: '১ দিন বাকি' },
-  { id: 'CS2310-GH78', name: 'নুসরাত জাহান', phone: '01611223344', circular: 'DC Sherpur', posts: 'অফিস সহকারী', amount: 112, status: 'completed', date: '২২ অক্টো', deadline: 'শেষ' },
-  { id: 'CS2310-IJ90', name: 'আরিফ হোসেন', phone: '01511223344', circular: 'WTMU', posts: 'অফিস সহায়ক', amount: 112, status: 'rejected', date: '২১ অক্টো', deadline: 'শেষ' },
-];
 
 const TABS = [
   { id: 'all', label: 'সব' },
@@ -18,19 +11,53 @@ const TABS = [
   { id: 'processing', label: 'প্রসেসিং' },
   { id: 'review', label: 'রিভিউতে' },
   { id: 'completed', label: 'সম্পন্ন' },
+  { id: 'rejected', label: 'বাতিল' },
 ];
 
 export default function ApplicationsPage() {
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  
+  const [applications, setApplications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredApps = MOCK_APPS.filter(app => {
-    const matchTab = activeTab === 'all' || app.status === activeTab;
-    const matchSearch = app.id.toLowerCase().includes(search.toLowerCase()) || 
-                        app.name.includes(search) || 
-                        app.phone.includes(search);
-    return matchTab && matchSearch;
-  });
+  // 💡 সার্চের জন্য Debounce (ইউজার টাইপ করা শেষ করলে ৫০০ms পর API কল হবে)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  // 💡 API থেকে ডাটা ফেচ করা
+  useEffect(() => {
+    const fetchApplications = async () => {
+      setIsLoading(true);
+      try {
+        const token = Cookies.get('token');
+        const url = new URL(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/applications/admin/all`);
+        
+        if (activeTab !== 'all') url.searchParams.append('status', activeTab);
+        if (debouncedSearch) url.searchParams.append('search', debouncedSearch);
+
+        const res = await fetch(url.toString(), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('ডাটা লোড করতে সমস্যা হয়েছে');
+        
+        const data = await res.json();
+        setApplications(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, [activeTab, debouncedSearch]);
 
   return (
     <div className="space-y-6">
@@ -41,8 +68,7 @@ export default function ApplicationsPage() {
           <p className="text-sm text-slate-500">সব ইউজার আবেদন এখানে দেখতে ও ম্যানেজ করতে পারবেন।</p>
         </div>
         <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
-          <Download className="h-4 w-4" />
-          এক্সপোর্ট করুন
+          <Download className="h-4 w-4" /> এক্সপোর্ট করুন
         </button>
       </div>
 
@@ -76,13 +102,18 @@ export default function ApplicationsPage() {
           />
         </label>
         <button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700">
-          <Filter className="h-4 w-4" />
-          ফিল্টার
+          <Filter className="h-4 w-4" /> ফিল্টার
         </button>
       </div>
 
-      {/* Table */}
-      <ApplicationTable data={filteredApps} />
+      {/* Table / Loading State */}
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white">
+          <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+        </div>
+      ) : (
+        <ApplicationTable data={applications} />
+      )}
     </div>
   );
 }

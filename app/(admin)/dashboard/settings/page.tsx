@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useState } from 'react';
-import { Save, Wallet, Phone, ShieldCheck } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Wallet, Phone, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
 
 export default function SettingsPage() {
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Demo Settings State
   const [settings, setSettings] = useState({
     smsFee: 15,
     tiers: [100, 180, 250, 310, 360],
@@ -19,15 +21,52 @@ export default function SettingsPage() {
     ]
   });
 
-  const handleSave = (e: React.FormEvent) => {
+  // 💡 ১. API থেকে ডাটা লোড করা
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/settings`);
+        if (!res.ok) throw new Error('সেটিংস লোড করতে সমস্যা হয়েছে');
+        const data = await res.json();
+        setSettings(data);
+      } catch (error: any) {
+        toast.error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // 💡 ২. সেভ বাটনের লজিক
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate API Call
-    setTimeout(() => {
-      setIsSaving(false);
+    
+    try {
+      const token = Cookies.get('token');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(settings)
+      });
+
+      if (!res.ok) throw new Error('আপডেট ব্যর্থ হয়েছে');
+      
       toast.success('সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে!');
-    }, 1000);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return <div className="flex h-[60vh] items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-brand-600" /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -156,7 +195,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Row 2: Security */}
+        {/* Row 2: Security (পাসওয়ার্ড চেঞ্জ আপাতত ফ্রন্টএন্ডে ডেমো রাখা হলো) */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6">
           <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4">
             <ShieldCheck className="h-5 w-5 text-brand-600" />

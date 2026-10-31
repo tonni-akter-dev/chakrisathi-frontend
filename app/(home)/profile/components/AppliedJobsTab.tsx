@@ -1,42 +1,110 @@
-import { MapPin, Clock, ArrowRight } from 'lucide-react';
-
-const mockJobs = [
-  { id: '1', title: 'কম্পিউটার অপারেটর', org: 'উৎসে কর ব্যবস্থাপনা ইউনিট', loc: 'ঢাকা', deadline: '১০ নভেম্বর', status: 'processing' },
-  { id: '2', title: 'অফিস সহায়ক', org: 'HBRI', loc: 'ঢাকা', deadline: '১৫ নভেম্বর', status: 'completed' },
-  { id: '3', title: 'সহকারী শিক্ষক', org: 'প্রাথমিক শিক্ষা অধিদপ্তর', loc: 'সকল জেলা', deadline: '২০ নভেম্বর', status: 'pending' },
-];
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+import { useState, useEffect } from 'react';
+import { MapPin, Clock, ArrowRight, Loader2, FileText } from 'lucide-react';
+import Link from 'next/link';
+import Cookies from 'js-cookie';
 
 export default function AppliedJobsTab() {
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 💡 API থেকে ইউজারের সব আবেদন লোড করা
+  useEffect(() => {
+    const fetchMyApplications = async () => {
+      try {
+        const token = Cookies.get('token');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/applications/my`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch applications", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMyApplications();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-300 my-10">
       <h2 className="text-2xl font-bold text-slate-900">Applied Jobs</h2>
-      <div className="space-y-4">
-        {mockJobs.map((job) => (
-          <div key={job.id} className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
-              {/* 💡 এখানে text-brand-600 করা হয়েছে */}
-              <p className="text-sm font-medium text-brand-600">{job.org}</p>
-              <div className="flex gap-4 mt-2 text-sm text-slate-500">
-                <span className="flex items-center gap-1"><MapPin className="h-4 w-4"/> {job.loc}</span>
-                <span className="flex items-center gap-1"><Clock className="h-4 w-4"/> শেষ: {job.deadline}</span>
+      
+      {/* 💡 ডাটা না থাকলে এম্পটি স্টেট */}
+      {jobs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center">
+          <FileText className="h-12 w-12 text-slate-300 mb-4" />
+          <h3 className="text-lg font-bold text-slate-700">কোনো আবেদন পাওয়া যায়নি</h3>
+          <p className="text-sm text-slate-500 mb-4">আপনি এখনো কোনো পদে আবেদন করেননি।</p>
+          <Link href="/jobs" className="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition">
+            জব বোর্ডে যান
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {jobs.map((job) => (
+            <div key={job._id} className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition">
+              <div>
+                {/* পদের নাম */}
+                <h3 className="text-lg font-bold text-slate-900">
+                  {job.posts?.map((p: any) => p.name).join(', ')}
+                </h3>
+                
+                {/* প্রতিষ্ঠানের নাম */}
+                <p className="text-sm font-medium text-brand-600">
+                  {job.circularOrg || 'N/A'}
+                </p>
+                
+                <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-500">
+                  {/* লোকেশন (যদি API-তে থাকে, না থাকলে ফোন নম্বর দেখানো হলো) */}
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4"/> {job.phone}
+                  </span>
+                  {/* আবেদনের তারিখ */}
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4"/> {new Date(job.createdAt).toLocaleDateString('bn-BD')}
+                  </span>
+                  <span className="font-semibold text-slate-700">
+                    ID: {job.applicationId}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-2">
+                {/* স্ট্যাটাস ব্যাজ */}
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                  job.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                  job.status === 'processing' ? 'bg-brand-100 text-brand-700' : 
+                  job.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                }`}>
+                  {job.status}
+                </span>
+                
+                {/* বিস্তারিত বাটন */}
+                <Link 
+                  href={`/track/${job.applicationId}`} 
+                  className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 transition"
+                >
+                  বিস্তারিত দেখুন <ArrowRight className="h-3 w-3" />
+                </Link>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                job.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                job.status === 'processing' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'
-              }`}>
-                {job.status}
-              </span>
-              {/* 💡 এখানে text-brand-600 করা হয়েছে */}
-              <button className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 transition">
-                বিস্তারিত দেখুন <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
