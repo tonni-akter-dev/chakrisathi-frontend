@@ -1,10 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 import {
   ChevronRight,
+  ChevronDown,
   MapPin,
   Building2,
   Calendar,
@@ -31,6 +37,11 @@ export default function JobDetailsPage() {
   } = useGetSingleCircularQuery(jobId, { skip: !jobId });
   const { data: allJobs } = useGetAllCircularsQuery({});
 
+  // ================= Wishlist State =================
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [showPostPicker, setShowPostPicker] = useState(false);
+
   const otherJobs =
     allJobs?.filter((j: any) => (j._id || j.id) !== jobId).slice(0, 5) || [];
 
@@ -43,6 +54,107 @@ export default function JobDetailsPage() {
     });
   };
 
+  // ------- wishlist fetch -------
+  const fetchWishlist = async () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      setWishlistItems([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : [];
+        // শুধু এই circular-এর আইটেম রাখা
+        const filtered = arr.filter((w: any) => {
+          const cId =
+            typeof w.circularId === "object"
+              ? w.circularId?._id
+              : w.circularId;
+          return cId === jobId;
+        });
+        setWishlistItems(filtered);
+      }
+    } catch (err) {
+      console.error("Wishlist fetch error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (jobId) fetchWishlist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
+
+  // ------- helper -------
+  const getPostName = (post: any): string =>
+    post?.name || post?.title || post?.postName || "";
+
+  const isPostWishlisted = (postName: string) =>
+    wishlistItems.some((w) => w.postName === postName);
+
+  // ------- toggle (add / remove) -------
+const toggleWishlistPost = async (postName: string) => {
+  if (!postName) {
+    toast.error("পদের নাম পাওয়া যায়নি");
+    return;
+  }
+  const token = Cookies.get("token");
+  if (!token) {
+    toast.error("অনুগ্রহ করে লগইন করুন");
+    return;
+  }
+  setIsWishlistLoading(true);
+  try {
+    const isRemoving = isPostWishlisted(postName);
+
+    const res = isRemoving
+      ? await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist?circularId=${jobId}&postName=${encodeURIComponent(
+            postName
+          )}`,
+          { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+        )
+      : await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ circularId: jobId, postName }),
+          }
+        );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      toast.error(err?.message || "সমস্যা হয়েছে!");
+      return;
+    }
+
+    // ✅ অপ্টিমিস্টিক আপডেট
+    if (isRemoving) {
+      setWishlistItems((prev) => prev.filter((w) => w.postName !== postName));
+      toast.success("উইশলিস্ট থেকে সরানো হয়েছে");
+    } else {
+      setWishlistItems((prev) => [...prev, { circularId: jobId, postName }]);
+      toast.success("উইশলিস্টে যোগ হয়েছে");
+    }
+
+    // ✅ server থেকে re-sync (source of truth)
+    await fetchWishlist();
+  } catch (err) {
+    toast.error("সমস্যা হয়েছে!");
+  } finally {
+    setIsWishlistLoading(false);
+  }
+};
+
+  // ================= Render guards =================
   if (isLoading)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -52,16 +164,20 @@ export default function JobDetailsPage() {
   if (isError || !job)
     return (
       <div className="text-center py-20 text-xl font-bold">
-        সার্কুলার পাওয়া যায়নি!
+        সার্কুলার পাওয়া যায়নি!
       </div>
     );
 
   const isActive = new Date(job.end) > new Date();
 
+  const posts: any[] = Array.isArray(job.posts) ? job.posts : [];
+  const postNames = posts.map(getPostName).filter(Boolean);
+  const fallbackPostName = job.title as string;
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 pt-6">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        {/* ব্রেডক্রাম্ব */}
+        {/* Breadcrumb */}
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <Link href="/" className="hover:text-brand-600">
             Home
@@ -74,9 +190,9 @@ export default function JobDetailsPage() {
           <span className="text-slate-800 font-semibold">{job.title}</span>
         </div>
 
-        {/* মেইন গ্রিড লেআউট */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* ================= বাম দিকের সাইডবার (অন্যান্য জব) ================= */}
+          {/* ============ Sidebar ============ */}
           <div className="lg:col-span-4 xl:col-span-3 space-y-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">
               Related Jobs
@@ -123,9 +239,9 @@ export default function JobDetailsPage() {
             </Link>
           </div>
 
-          {/* ================= ডান দিকের মেইন কন্টেন্ট ================= */}
+          {/* ============ Main Content ============ */}
           <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-            {/* ১. জব হেডার কার্ড */}
+            {/* Header card */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex flex-col md:flex-row justify-between items-start gap-6">
                 <div className="flex items-start gap-5">
@@ -144,20 +260,118 @@ export default function JobDetailsPage() {
                     </p>
 
                     <div
-                      className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border ${isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}
+                      className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border ${
+                        isActive
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border-rose-200"
+                      }`}
                     >
                       <span
-                        className={`h-2 w-2 rounded-full ${isActive ? "bg-emerald-500" : "bg-rose-500"}`}
+                        className={`h-2 w-2 rounded-full ${
+                          isActive ? "bg-emerald-500" : "bg-rose-500"
+                        }`}
                       ></span>
                       {isActive ? "Status: Live" : "Status: Closed"}
                     </div>
                   </div>
                 </div>
 
+                {/* ===== Action Buttons ===== */}
                 <div className="flex flex-col gap-3 w-full md:w-auto">
-                  <button className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-amber-600 transition">
-                    <Heart className="h-4 w-4" /> Wish list
-                  </button>
+                  {/* ---- WISHLIST ---- */}
+                  {postNames.length <= 1 ? (
+                    // Single post toggle
+                    (() => {
+                      const pName = postNames[0] || fallbackPostName;
+                      const wishlisted = isPostWishlisted(pName);
+                      return (
+                        <button
+                          onClick={() => toggleWishlistPost(pName)}
+                          disabled={isWishlistLoading}
+                          className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition disabled:opacity-60 ${
+                            wishlisted
+                              ? "bg-rose-600 hover:bg-rose-700"
+                              : "bg-amber-500 hover:bg-amber-600"
+                          }`}
+                        >
+                          {isWishlistLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Heart
+                              className={`h-4 w-4 ${
+                                wishlisted ? "fill-current" : ""
+                              }`}
+                            />
+                          )}
+                          {wishlisted ? "Wishlisted" : "Wish list"}
+                        </button>
+                      );
+                    })()
+                  ) : (
+                    // Multiple posts -> dropdown picker
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowPostPicker((s) => !s)}
+                        className={`flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition ${
+                          wishlistItems.length > 0
+                            ? "bg-rose-600 hover:bg-rose-700"
+                            : "bg-amber-500 hover:bg-amber-600"
+                        }`}
+                      >
+                        <Heart
+                          className={`h-4 w-4 ${
+                            wishlistItems.length > 0 ? "fill-current" : ""
+                          }`}
+                        />
+                        {wishlistItems.length > 0
+                          ? `Wishlisted (${wishlistItems.length}/${postNames.length})`
+                          : "Wish list"}
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform ${
+                            showPostPicker ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {showPostPicker && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setShowPostPicker(false)}
+                          />
+                          <div className="absolute right-0 z-20 mt-2 w-full min-w-65 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                            <p className="px-2 py-1 text-xs font-bold text-slate-500 uppercase">
+                              Select posts to wishlist
+                            </p>
+                            {postNames.map((name) => {
+                              const wishlisted = isPostWishlisted(name);
+                              return (
+                                <button
+                                  key={name}
+                                  onClick={() => toggleWishlistPost(name)}
+                                  disabled={isWishlistLoading}
+                                  className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-50 disabled:opacity-50 ${
+                                    wishlisted
+                                      ? "text-rose-600"
+                                      : "text-slate-700"
+                                  }`}
+                                >
+                                  <span className="line-clamp-1">{name}</span>
+                                  <Heart
+                                    className={`h-4 w-4 flex-none ${
+                                      wishlisted ? "fill-current" : ""
+                                    }`}
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Apply now */}
                   {isActive && job.allowServiceApply !== false && (
                     <Link
                       href={`/apply/${jobId}`}
@@ -169,7 +383,7 @@ export default function JobDetailsPage() {
                 </div>
               </div>
 
-              {/* তারিখ ও ভিউ কার্ড */}
+              {/* Dates & views */}
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4 border border-slate-100">
                   <div className="grid h-10 w-10 place-items-center rounded-full bg-blue-100 text-blue-600">
@@ -211,6 +425,7 @@ export default function JobDetailsPage() {
               </div>
             </div>
 
+            {/* PDF Viewer (unchanged) */}
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="bg-slate-100 w-full h-175 relative">
                 {job.pdfUrl ? (
@@ -225,13 +440,13 @@ export default function JobDetailsPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-slate-500">
                     <FileText className="h-12 w-12 mx-auto mb-2 text-slate-400" />
-                    <p>কোনো পিডিএফ যুক্ত করা হয়নি।</p>
+                    <p>কোনো পিডিএফ যুক্ত করা হয়নি।</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* ৩. Read Before Apply */}
+            {/* Read Before Apply (unchanged) */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-3">
                 Read Before Apply
@@ -239,7 +454,7 @@ export default function JobDetailsPage() {
               <p className="text-sm text-slate-600 leading-relaxed mb-4">
                 আমাদের মাধ্যমে আবেদন করতে চাইলে নিচের "Apply Online" বাটনে ক্লিক
                 করুন। আমাদের টিম আপনার আবেদনটি প্রসেস করবে। আবেদন করার আগে
-                অবশ্যই মূল বিজ্ঞপ্তিটি (PDF) ভালোভাবে পড়ে নিন।
+                অবশ্যই মূল বিজ্ঞপ্তিটি (PDF) ভালোভাবে পড়ে নিন।
               </p>
               <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-800 mb-6">
                 <span>Deadline: {formatDate(job.end)}</span>

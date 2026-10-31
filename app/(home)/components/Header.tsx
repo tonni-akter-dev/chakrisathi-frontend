@@ -20,7 +20,7 @@ import { bn } from "@/utils/helpers";
 import { useApp } from "@/utils/AppContext";
 
 const links = [
-  { href: "#jobs", label: "জব বোর্ড" },
+  { href: "/jobs", label: "জব বোর্ড" },
   { href: "#how", label: "কীভাবে কাজ করে" },
   { href: "#pricing", label: "খরচ" },
   { href: "/track", label: "ট্র্যাক" },
