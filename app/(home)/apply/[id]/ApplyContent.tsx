@@ -41,7 +41,6 @@ export default function ApplyContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
   
-  // 💡 ডাইনামিক পেমেন্ট মেথড রাখার স্টেট
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   
   const [fileUrls, setFileUrls] = useState<FileUrlsData>({ 
@@ -61,7 +60,6 @@ export default function ApplyContent() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/settings`);
         if (res.ok) {
           const data = await res.json();
-          // active: true আছে এমন মেথডগুলো ফিল্টার করে রাখা
           const activeMethods = data.methods?.filter((m: any) => m.active) || [];
           setPaymentMethods(activeMethods);
         }
@@ -170,41 +168,32 @@ export default function ApplyContent() {
     }
   };
 
+  // 💡 ৫. সাবমিট ফাংশন (সব ভ্যালিডেশন বাদ দেওয়া হয়েছে)
   const handleSubmit = async () => {
-    if (!fileUrls.photo || !fileUrls.signature) return toast.error("ছবি এবং স্বাক্ষর আপলোড করুন।");
-    const hasCertificate = ["ssc", "hsc", "graduation", "masters", "diploma"].some(
-      (key) => (fileUrls[key as keyof FileUrlsData] as string[])?.length > 0
-    );
-    if (!hasCertificate) return toast.error("অন্তত একটি শিক্ষাগত সার্টিফিকেট আপলোড করুন।");
-    if (!paymentMethod) return toast.error("পেমেন্ট মাধ্যম বাছাই করুন।");
-    if (!senderNumber) return toast.error("যে নাম্বার থেকে পেমেন্ট করেছেন তা দিন।");
-    if (!trxId) return toast.error("ট্রানজেকশন আইডি দিন।");
-    if (!agree) return toast.error("শর্তাবলীতে সম্মতি দিন।");
-
     setIsSubmitting(true);
     
     try {
       const payload = {
-        circularId: circular._id || circular.id,
-        circularOrg: circular.org,
-        name: formData.name,
-        phone: formData.mobile,
-        fatherName: formData.father,
-        motherName: formData.mother,
-        dob: formData.dob,
-        nid: formData.nid,
-        address: formData.address,
-        education: formData.education,
+        circularId: circular?._id || circular?.id || jobId,
+        circularOrg: circular?.org || "",
+        name: formData.name || "",
+        phone: formData.mobile || "",
+        fatherName: formData.father || "",
+        motherName: formData.mother || "",
+        dob: formData.dob || "",
+        nid: formData.nid || "",
+        address: formData.address || "",
+        education: formData.education || "",
         posts: selectedPosts.map((p) => ({
           postId: p._id || null,
-          name: p.n,
+          name: p.n || "",
           fee: p.fee || 112,
           grade: p.g || "",
         })),
         amount: total,
-        paymentMethod,
-        senderNumber,
-        trxId,
+        paymentMethod: paymentMethod || "",
+        senderNumber: senderNumber || "",
+        trxId: trxId || "",
         documents: fileUrls,
       };
 
@@ -236,33 +225,12 @@ export default function ApplyContent() {
     }
   };
 
+  // 💡 ৬. নেক্সট ফাংশন (সব ভ্যালিডেশন বাদ দেওয়া হয়েছে)
   const handleNext = () => {
-    if (step === 0 && selectedPosts.length === 0) return toast.error("অন্তত একটি পদ বাছাই করুন।");
-    
-    if (step === 1) {
-      const requiredFields = [
-        { key: "name", label: "পূর্ণ নাম" }, { key: "father", label: "পিতার নাম" },
-        { key: "mother", label: "মাতার নাম" }, { key: "dob", label: "জন্ম তারিখ" },
-        { key: "nid", label: "NID" }, { key: "mobile", label: "মোবাইল" },
-      ];
-      const missing = requiredFields.find((f) => !formData[f.key as keyof FormData].trim());
-      if (missing) return toast.error(`"${missing.label}" পূরণ করুন।`);
-      if (!/^01[3-9]\d{8}$/.test(formData.mobile)) return toast.error("সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন।");
-    }
-
-    if (step === 2) {
-      if (!fileUrls.photo || !fileUrls.signature) return toast.error("ছবি এবং স্বাক্ষর আপলোড করুন।");
-      const hasCertificate = ["ssc", "hsc", "graduation", "masters", "diploma"].some(
-        (key) => (fileUrls[key as keyof FileUrlsData] as string[])?.length > 0
-      );
-      if (!hasCertificate) return toast.error("অন্তত একটি শিক্ষাগত সার্টিফিকেট আপলোড করুন।");
-    }
-
     if (step === 3) {
       handleSubmit();
       return;
     }
-
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };
 
@@ -280,7 +248,6 @@ export default function ApplyContent() {
   const serviceFee = selectedPosts.length > 0 ? 100 : 0;
   const total = govtFee + smsFee + serviceFee;
 
-  // সিলেক্ট করা পেমেন্ট মেথডের ডিটেইলস বের করা
   const selectedPaymentDetails = paymentMethods.find(m => m.id === paymentMethod);
 
   const UploadBtn = ({ label, hint, fieldKey, multiple = false }: { label: string; hint: string; fieldKey: keyof FileUrlsData; multiple?: boolean; }) => {
@@ -409,27 +376,27 @@ export default function ApplyContent() {
               {step === 1 && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className={labelCls}>পূর্ণ নাম *</label>
+                    <label className={labelCls}>পূর্ণ নাম</label>
                     <input className={inputCls} value={formData.name} onChange={(e) => setField("name", e.target.value)} />
                   </div>
                   <div>
-                    <label className={labelCls}>পিতার নাম *</label>
+                    <label className={labelCls}>পিতার নাম</label>
                     <input className={inputCls} value={formData.father} onChange={(e) => setField("father", e.target.value)} />
                   </div>
                   <div>
-                    <label className={labelCls}>মাতার নাম *</label>
+                    <label className={labelCls}>মাতার নাম</label>
                     <input className={inputCls} value={formData.mother} onChange={(e) => setField("mother", e.target.value)} />
                   </div>
                   <div>
-                    <label className={labelCls}>জন্ম তারিখ *</label>
+                    <label className={labelCls}>জন্ম তারিখ</label>
                     <input type="date" className={inputCls} value={formData.dob} onChange={(e) => setField("dob", e.target.value)} />
                   </div>
                   <div>
-                    <label className={labelCls}>NID নম্বর *</label>
+                    <label className={labelCls}>NID নম্বর</label>
                     <input className={inputCls} value={formData.nid} onChange={(e) => setField("nid", e.target.value)} />
                   </div>
                   <div>
-                    <label className={labelCls}>মোবাইল নম্বর *</label>
+                    <label className={labelCls}>মোবাইল নম্বর</label>
                     <input className={inputCls} value={formData.mobile} onChange={(e) => setField("mobile", e.target.value)} />
                   </div>
                   <div className="sm:col-span-2">
@@ -471,7 +438,6 @@ export default function ApplyContent() {
                   
                   <div>
                     <div className={labelCls}>পেমেন্ট মাধ্যম বাছাই করুন</div>
-                    {/* 💡 ডাইনামিক পেমেন্ট মেথড লিস্ট */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                       {paymentMethods.length === 0 && <p className="text-sm text-slate-500 col-span-full">কোনো পেমেন্ট মাধ্যম চালু নেই।</p>}
                       {paymentMethods.map((m) => (
@@ -487,7 +453,6 @@ export default function ApplyContent() {
                     </div>
                   </div>
 
-                  {/* 💡 ডাইনামিক পেমেন্ট নাম্বার ডিসপ্লে */}
                   {paymentMethod && selectedPaymentDetails && (
                     <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
                       <p className="text-xs text-amber-700 font-bold mb-1">অনুগ্রহ করে এই নাম্বারে ৳{total} পাঠান:</p>
@@ -499,11 +464,11 @@ export default function ApplyContent() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className={labelCls}>আপনার পাঠানো নাম্বার *</label>
+                      <label className={labelCls}>আপনার পাঠানো নাম্বার</label>
                       <input className={inputCls} value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="01XXXXXXXXX" />
                     </div>
                     <div>
-                      <label className={labelCls}>Transaction ID (TrxID) *</label>
+                      <label className={labelCls}>Transaction ID (TrxID)</label>
                       <input className={inputCls} value={trxId} onChange={(e) => setTrxId(e.target.value)} placeholder="যেমন: 9F7A2B1C" />
                     </div>
                   </div>

@@ -10,9 +10,8 @@ interface Props {
 }
 
 export default function DetailModal({ circular: c, onClose }: Props) {
-  // 💡 কাউন্টডাউন টাইমারের জন্য স্টেট
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
+console.log(c,"Detail modal details")
   useEffect(() => {
     if (!c) return;
 
@@ -192,7 +191,7 @@ export default function DetailModal({ circular: c, onClose }: Props) {
         {/* ================= ফুটার বাটন (ফিক্সড) ================= */}
         <div className="flex-none flex gap-3 p-4 bg-white border-t border-slate-100">
           <Link
-            href={c.pdfUrl || c.link || '#'} 
+            href={`/jobs/${c._id}`} 
             target="_blank" 
             rel="noreferrer" 
             className="flex-1 flex items-center justify-center gap-2 rounded-full border-2 border-[#7c3aed] px-4 py-3 text-sm font-bold text-[#7c3aed] hover:bg-[#f3e8ff] transition">
