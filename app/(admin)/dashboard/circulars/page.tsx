@@ -71,9 +71,9 @@ export default function CircularsPage() {
                 
                 {/* স্ট্যাটাস */}
                 {isActive ? (
-                  <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">সক্রিয়</span>
+                  <span className="rounded-full bg-emerald-50 px-2 py-1 text-[0.6875rem] font-bold text-emerald-700">সক্রিয়</span>
                 ) : (
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500">শেষ</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-1 text-[0.6875rem] font-bold text-slate-500">শেষ</span>
                 )}
               </div>
               

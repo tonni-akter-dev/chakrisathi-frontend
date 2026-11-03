@@ -26,7 +26,7 @@ export default function JobBoard() {
   const totalP = circulars.reduce((sum: number, c: any) => sum + (c.total || c.posts?.length || 0), 0);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6" id="jobs">
+    <section className="container-site py-12" id="jobs">
       <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-4">
         <div className="flex w-full lg:w-auto bg-white rounded-full p-1 border border-slate-200 shadow-sm">
           <button

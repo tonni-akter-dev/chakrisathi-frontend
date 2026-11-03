@@ -4,14 +4,14 @@ import {  Send } from 'lucide-react';
 export default function Footer() {
   return (
     <footer className="bg-slate-900 pt-16 pb-6 text-slate-400">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="container-site">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link href="/" className="flex items-center gap-2.5 text-white">
               <div className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600">
                 <span className="text-lg font-bold text-white">চ</span>
               </div>
-              <div className="text-[17px] font-semibold tracking-tight">সোনার <span className="text-brand-400">হরিণ</span></div>
+              <div className="text-[1.0625rem] font-semibold tracking-tight">সোনার <span className="text-brand-400">হরিণ</span></div>
             </Link>
             <p className="mt-4 text-sm leading-relaxed">
               বাংলাদেশের তরুণদের সরকারি চাকরির বিশ্বস্ত সঙ্গী। সার্কুলার, আবেদন সহায়তা ও প্রস্তুতি — সব এক জায়গায়।

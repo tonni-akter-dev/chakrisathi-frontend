@@ -15,7 +15,7 @@ export default function AuthLayout({
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600">
             <span className="text-base font-bold text-white">চ</span>
           </div>
-          <span className="text-[17px] font-semibold tracking-tight text-slate-900">
+          <span className="text-[1.0625rem] font-semibold tracking-tight text-slate-900">
             সোনার <span className="text-brand-600"> হরিণ</span>
           </span>
         </Link>

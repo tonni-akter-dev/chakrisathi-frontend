@@ -8,7 +8,7 @@ const transactions = [
 
 export default function BillingTab() {
   return (
-    <div className="max-w-5xl space-y-6 animate-in fade-in duration-300">
+    <div className="mx-auto w-full max-w-6xl space-y-6 animate-in fade-in duration-300">
       <h2 className="text-2xl font-bold text-slate-900">Transaction & Billing</h2>
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-left text-sm">

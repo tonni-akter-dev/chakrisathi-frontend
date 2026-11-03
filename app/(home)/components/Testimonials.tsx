@@ -40,7 +40,7 @@ export default function Testimonials() {
 
   return (
     <section
-      className="mx-auto max-w-7xl px-4 py-16 sm:px-6 overflow-hidden"
+      className="container-site py-16 overflow-hidden"
       id="stories"
     >
       {/* Header */}
@@ -110,7 +110,7 @@ export default function Testimonials() {
                       </div>
 
                       {/* Text */}
-                      <p className="mb-8 text-[15px] leading-relaxed text-slate-700">
+                      <p className="mb-8 text-[0.9375rem] leading-relaxed text-slate-700">
                         {t.text}
                       </p>
                     </div>

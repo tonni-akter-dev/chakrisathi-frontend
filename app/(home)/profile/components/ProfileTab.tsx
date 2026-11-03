@@ -16,7 +16,7 @@ export default function ProfileTab() {
   if (isError) return <div className="p-6 text-center text-red-600">প্রোফাইল লোড করতে সমস্যা হয়েছে।</div>;
 
   return (
-    <div className="max-w-5xl space-y-6 animate-in fade-in duration-300 my-10">
+    <div className="mx-auto w-full max-w-6xl space-y-6 animate-in fade-in duration-300 my-10">
       
       {/* হেডার সেকশন */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

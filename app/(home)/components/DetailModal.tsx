@@ -92,19 +92,19 @@ console.log(c,"Detail modal details")
             <div className="relative grid grid-cols-4 gap-3 max-w-sm">
               <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
                 <div className="text-xl font-bold">{toBn(timeLeft.days)}</div>
-                <div className="text-[10px] text-white/70">দিন</div>
+                <div className="text-[0.6875rem] text-white/70">দিন</div>
               </div>
               <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
                 <div className="text-xl font-bold">{toBn(timeLeft.hours)}</div>
-                <div className="text-[10px] text-white/70">ঘণ্টা</div>
+                <div className="text-[0.6875rem] text-white/70">ঘণ্টা</div>
               </div>
               <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
                 <div className="text-xl font-bold">{toBn(timeLeft.minutes)}</div>
-                <div className="text-[10px] text-white/70">মিনিট</div>
+                <div className="text-[0.6875rem] text-white/70">মিনিট</div>
               </div>
               <div className="rounded-xl bg-white/10 border border-white/10 p-2 text-center">
                 <div className="text-xl font-bold">{toBn(timeLeft.seconds)}</div>
-                <div className="text-[10px] text-white/70">সেকেন্ড</div>
+                <div className="text-[0.6875rem] text-white/70">সেকেন্ড</div>
               </div>
             </div>
           ) : (

@@ -263,12 +263,12 @@ export default function ApplyContent() {
             </div>
             <div>
               <div className="text-sm font-bold text-slate-800">{label}</div>
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[0.6875rem] text-slate-500">
                 {isUploading ? "আপলোড হচ্ছে..." : isUploaded ? `✅ ${multiple ? `${(fileUrls[fieldKey] as string[]).length}টি ফাইল` : "আপলোড সম্পন্ন"}` : hint}
               </div>
             </div>
           </div>
-          <span className={`flex-none rounded-full px-3 py-1 text-[10px] font-bold ${isUploaded ? "bg-emerald-100 text-emerald-700" : "bg-brand-100 text-brand-700"}`}>
+          <span className={`flex-none rounded-full px-3 py-1 text-[0.6875rem] font-bold ${isUploaded ? "bg-emerald-100 text-emerald-700" : "bg-brand-100 text-brand-700"}`}>
             {isUploaded ? "যোগ করুন" : "আপলোড"}
           </span>
           <input
@@ -304,7 +304,7 @@ export default function ApplyContent() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-hind pb-20">
-      <main className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+      <main className="container-site pt-8">
         
         {/* Stepper */}
         <div className="relative mx-auto mb-10 hidden max-w-4xl px-4 sm:block">
@@ -457,8 +457,8 @@ export default function ApplyContent() {
                     <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
                       <p className="text-xs text-amber-700 font-bold mb-1">অনুগ্রহ করে এই নাম্বারে ৳{total} পাঠান:</p>
                       <div className="text-xl font-bold text-slate-900 tracking-wider">{selectedPaymentDetails.number}</div>
-                      <p className="text-[11px] text-amber-600 mt-1">({selectedPaymentDetails.type} - {selectedPaymentDetails.name})</p>
-                      <p className="text-[11px] text-amber-600 mt-2 font-semibold">সেন্ড মানি করার পর নিচে তথ্য দিন।</p>
+                      <p className="text-[0.6875rem] text-amber-600 mt-1">({selectedPaymentDetails.type} - {selectedPaymentDetails.name})</p>
+                      <p className="text-[0.6875rem] text-amber-600 mt-2 font-semibold">সেন্ড মানি করার পর নিচে তথ্য দিন।</p>
                     </div>
                   )}
 

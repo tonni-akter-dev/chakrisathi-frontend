@@ -21,7 +21,7 @@ export default function Categories() {
   };
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <section className="container-site py-10">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {CATS.map((c) => {
           const Icon = iconMap[c.ic] ?? Layers;

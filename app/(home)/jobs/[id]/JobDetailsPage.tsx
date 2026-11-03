@@ -178,7 +178,7 @@ export default function JobDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 pt-6">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="container-site">
         {/* Breadcrumb */}
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <Link href="/" className="hover:text-brand-600 transition">Home</Link>
@@ -218,7 +218,7 @@ export default function JobDetailsPage() {
                     <p className="text-xs text-slate-500 mt-1 line-clamp-1">
                       {j.org}
                     </p>
-                    <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-slate-600">
+                    <div className="mt-2 flex items-center gap-2 text-[0.6875rem] font-semibold text-slate-600">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" /> {j.loc}
                       </span>
@@ -407,7 +407,7 @@ export default function JobDetailsPage() {
                     <Calendar className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <p className="text-[0.6875rem] font-bold text-slate-500 uppercase tracking-wider">
                       Start Date
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-0.5">
@@ -421,7 +421,7 @@ export default function JobDetailsPage() {
                     <Calendar className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <p className="text-[0.6875rem] font-bold text-slate-500 uppercase tracking-wider">
                       End Date
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-0.5">

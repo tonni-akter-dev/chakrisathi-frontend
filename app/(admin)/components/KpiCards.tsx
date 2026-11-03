@@ -20,7 +20,7 @@ export default function KpiCards({ data }: { data: any }) {
             <div className={`grid h-8 w-8 place-items-center rounded-lg ${kpi.bg} ${kpi.color}`}>
               <kpi.icon className="h-4 w-4" />
             </div>
-            <span className="text-[11px] font-semibold uppercase text-slate-500 truncate">{kpi.label}</span>
+            <span className="text-[0.6875rem] font-semibold uppercase text-slate-500 truncate">{kpi.label}</span>
           </div>
           <div className={`mt-3 text-2xl font-bold ${kpi.color}`}>{kpi.value}</div>
         </div>

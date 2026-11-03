@@ -35,7 +35,7 @@ export default function CircularCard({ circular: c, index, onDetail }: Props) {
               {c.ab || 'JOB'}
             </div>
             <div>
-              <h3 className="text-[15px] font-bold text-slate-900 leading-tight line-clamp-1">{c.org}</h3>
+              <h3 className="text-[0.9375rem] font-bold text-slate-900 leading-tight line-clamp-1">{c.org}</h3>
               <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5" /> {c.loc || 'সকল জেলা'}
               </p>
@@ -48,7 +48,7 @@ export default function CircularCard({ circular: c, index, onDetail }: Props) {
 
         {/* জেলা ব্যাজ */}
         <div className="mb-4">
-          <span className="inline-block rounded-md bg-[#f3e8ff] px-2 py-1 text-[10px] font-bold text-[#7c3aed]">
+          <span className="inline-block rounded-md bg-[#f3e8ff] px-2 py-1 text-[0.6875rem] font-bold text-[#7c3aed]">
             {c.scope === 'national' ? 'সকল জেলা' : 'নির্দিষ্ট জেলা'}
           </span>
         </div>
@@ -56,17 +56,17 @@ export default function CircularCard({ circular: c, index, onDetail }: Props) {
         {/* পোস্টের ট্যাগসমূহ */}
         <div className="flex flex-wrap gap-2 mb-4">
           {c.posts?.slice(0, 3).map((post: any, idx: number) => (
-            <span key={idx} className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
+            <span key={idx} className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-[0.6875rem] font-medium text-slate-600">
               {post.n}
             </span>
           ))}
           {c.posts?.length > 3 && (
-            <span className="rounded-md border border-dashed border-[#d8b4fe] bg-[#f3e8ff] px-2 py-1 text-[11px] font-bold text-[#7c3aed]">
+            <span className="rounded-md border border-dashed border-[#d8b4fe] bg-[#f3e8ff] px-2 py-1 text-[0.6875rem] font-bold text-[#7c3aed]">
               +{c.posts.length - 3}টি পদ
             </span>
           )}
           {(!c.posts || c.posts.length === 0) && (
-            <span className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
+            <span className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-1 text-[0.6875rem] font-medium text-slate-600">
               {totalCats} ক্যাটাগরির পদ — বিজ্ঞপ্তিত দেখুন
             </span>
           )}
@@ -76,21 +76,21 @@ export default function CircularCard({ circular: c, index, onDetail }: Props) {
         <div className="rounded-xl bg-[#f8f5ff] p-3 grid grid-cols-3 gap-2 text-center mb-5 mt-auto">
           <div>
             <div className="text-lg font-bold text-slate-900">{totalPosts}</div>
-            <div className="text-[10px] font-semibold text-slate-500">মোট পদ</div>
+            <div className="text-[0.6875rem] font-semibold text-slate-500">মোট পদ</div>
           </div>
           <div>
             <div className="text-lg font-bold text-slate-900">{totalCats}</div>
-            <div className="text-[10px] font-semibold text-slate-500">ক্যাটাগরি</div>
+            <div className="text-[0.6875rem] font-semibold text-slate-500">ক্যাটাগরি</div>
           </div>
           <div>
             <div className="text-lg font-bold text-slate-900">{totalPosts}</div>
-            <div className="text-[10px] font-semibold text-slate-500">নেড়ভার</div>
+            <div className="text-[0.6875rem] font-semibold text-slate-500">নেড়ভার</div>
           </div>
         </div>
 
         {/* ডেডলাইন এবং প্রোগ্রেস বার */}
         <div className="mb-4">
-          <div className="flex justify-between items-center text-[11px] font-bold mb-2">
+          <div className="flex justify-between items-center text-[0.6875rem] font-bold mb-2">
             <span className="text-slate-700">শেষ: {new Date(c.end).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long' })}</span>
             <span className="text-orange-500">৫ দিন ০ ঘণ্টা বাকি</span>
           </div>

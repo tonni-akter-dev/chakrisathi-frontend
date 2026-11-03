@@ -122,7 +122,7 @@ export default function JobsPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F7FB] pb-20 pt-10">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+      <div className="container-site">
         
         {/* হেডার এবং সার্চ বার */}
         <div className="mb-10 text-center">
@@ -238,11 +238,11 @@ export default function JobsPage() {
 
                     <div className="flex flex-col items-end gap-3 ml-4">
                       {isActive ? (
-                        <span className="rounded-full bg-emerald-100/50 px-3 py-1 text-[11px] font-bold tracking-wide text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                        <span className="rounded-full bg-emerald-100/50 px-3 py-1 text-[0.6875rem] font-bold tracking-wide text-emerald-700 border border-emerald-200 flex items-center gap-1">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span> সক্রিয়
                         </span>
                       ) : (
-                        <span className="rounded-full bg-rose-100/50 px-3 py-1 text-[11px] font-bold tracking-wide text-rose-700 border border-rose-200">
+                        <span className="rounded-full bg-rose-100/50 px-3 py-1 text-[0.6875rem] font-bold tracking-wide text-rose-700 border border-rose-200">
                           বন্ধ
                         </span>
                       )}

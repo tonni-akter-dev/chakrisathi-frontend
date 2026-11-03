@@ -73,10 +73,10 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="container-site flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="text-[17px] font-semibold tracking-tight text-slate-900">
+          <div className="text-[1.0625rem] font-semibold tracking-tight text-slate-900">
             সোনার <span className="text-brand-600">হরিণ</span>
           </div>
         </Link>
@@ -87,7 +87,7 @@ export default function Header() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-sm font-medium text-slate-600 transition hover:text-brand-600"
+              className="text-base font-medium text-slate-600 transition hover:text-brand-600"
             >
               {l.label}
             </Link>
@@ -103,7 +103,7 @@ export default function Header() {
           >
             <Heart className="h-4 w-4" />
             {state.saved.length > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
+              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[0.6875rem] font-bold text-white">
                 {bn(state.saved.length)}
               </span>
             )}

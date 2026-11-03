@@ -103,7 +103,7 @@ export default function Topbar() {
                 <div className="text-sm font-bold text-slate-900 leading-tight truncate max-w-30">
                   {user.name}
                 </div>
-                <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="flex items-center gap-1 text-[0.6875rem] font-semibold text-slate-500 uppercase tracking-wider">
                   {user.role === "admin" ? (
                     <>
                       <ShieldCheck className="h-3 w-3 text-emerald-500" /> Admin
@@ -130,7 +130,7 @@ export default function Topbar() {
                 </div>
 
                 <div className="px-4 py-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-slate-400">
                     Role
                   </p>
                   <p className="text-sm font-semibold text-slate-900 capitalize flex items-center gap-1.5">

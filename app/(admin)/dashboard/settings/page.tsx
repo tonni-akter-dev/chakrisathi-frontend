@@ -104,7 +104,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-5 gap-2">
                   {settings.tiers.map((tier, i) => (
                     <div key={i}>
-                      <label className="mb-1 block text-[11px] font-medium text-slate-500">{i + 1}টি পদ</label>
+                      <label className="mb-1 block text-[0.6875rem] font-medium text-slate-500">{i + 1}টি পদ</label>
                       <input
                         type="number"
                         value={tier}

@@ -56,7 +56,7 @@ export default function WishlistTab() {
   }
 
   return (
-    <div className="max-w-5xl space-y-6 animate-in fade-in duration-300 my-10">
+    <div className="mx-auto w-full max-w-6xl space-y-6 animate-in fade-in duration-300 my-10">
       <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
         <Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> My Wishlist
       </h2>

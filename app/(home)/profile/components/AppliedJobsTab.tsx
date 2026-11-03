@@ -40,7 +40,7 @@ export default function AppliedJobsTab() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-300 my-10">
+    <div className="mx-auto w-full max-w-6xl space-y-6 animate-in fade-in duration-300 my-10">
       <h2 className="text-2xl font-bold text-slate-900">Applied Jobs</h2>
       
       {/* 💡 ডাটা না থাকলে এম্পটি স্টেট */}

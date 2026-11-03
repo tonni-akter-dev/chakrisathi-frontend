@@ -42,7 +42,7 @@ const bnNumbers = ['০১', '০২', '০৩', '০৪', '০৫'];
 
 export default function HowItWorks() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6" id="how">
+    <section className="container-site py-16" id="how">
       {/* Main Purple Container */}
       <div className="relative overflow-hidden rounded-[32px] bg-[#6246EA] px-6 py-16 sm:px-12 lg:px-16">
         
@@ -57,7 +57,7 @@ export default function HowItWorks() {
           <h2 className="mt-5 text-3xl font-bold text-white sm:text-4xl">
             আমাদের মাধ্যমে যেভাবে আবেদন হয়
           </h2>
-          <p className="mt-3 text-[15px] text-purple-100/90 font-medium">
+          <p className="mt-3 text-[0.9375rem] text-purple-100/90 font-medium">
             কম্পিউটার বা দোকানে যাওয়ার দরকার নেই। মোবাইল দিয়েই সব।
           </p>
         </div>
@@ -80,10 +80,10 @@ export default function HowItWorks() {
               </div>
 
               {/* Text Content */}
-              <h3 className="relative text-[16px] font-bold text-white mb-2">
+              <h3 className="relative text-base font-bold text-white mb-2">
                 {s.t}
               </h3>
-              <p className="relative text-[13.5px] leading-relaxed text-purple-100/80">
+              <p className="relative text-[0.84375rem] leading-relaxed text-purple-100/80">
                 {s.d}
               </p>
             </div>

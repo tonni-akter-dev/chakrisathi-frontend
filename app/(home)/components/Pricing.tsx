@@ -12,7 +12,7 @@ export default function Pricing() {
   const pricing = calcFees(Array.from({ length: n }, () => ({ n: '', fee })), null, SETTINGS);
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6" id="pricing">
+    <section className="container-site py-16" id="pricing">
       <div className="mx-auto mb-10 max-w-xl text-center">
         <div className="inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">খরচ</div>
         <h2 className="mt-3 text-2xl font-bold sm:text-3xl">স্বচ্ছ ফি — কোনো লুকানো চার্জ নেই</h2>
@@ -29,7 +29,7 @@ export default function Pricing() {
           return (
             <div key={tier} className={`relative rounded-2xl border-2 bg-white p-6 text-center transition ${popular ? 'border-brand-600 shadow-lg md:-translate-y-2' : 'border-slate-200'}`}>
               {popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-3 py-1 text-[11px] font-semibold text-white">জনপ্রিয়</span>
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-3 py-1 text-[0.6875rem] font-semibold text-white">জনপ্রিয়</span>
               )}
               <h3 className="text-sm font-medium text-slate-600">{bn(tier)}টি পদে আবেদন</h3>
               <div className="my-2 text-4xl font-bold tracking-tight text-slate-900">৳{bn(f)}</div>

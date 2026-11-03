@@ -23,7 +23,7 @@ export default function DashboardOverview() {
   ];
 
   return (
-    <div className="space-y-6 max-w-5xl animate-in fade-in duration-300 my-10">
+    <div className="mx-auto w-full max-w-6xl space-y-6 animate-in fade-in duration-300 my-10">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <div key={i} className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-brand-200">
