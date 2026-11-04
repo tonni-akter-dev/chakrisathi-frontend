@@ -6,7 +6,7 @@ const api = baseApi.injectEndpoints({
       query: (data) => ({
         url: "/auth/register",
         method: "POST",
-        data, 
+        data,
       }),
     }),
 
@@ -62,9 +62,9 @@ const api = baseApi.injectEndpoints({
     }),
 
     changePassword: builder.mutation({
-      query: (data) => ({
-        url: "/change-password",
-        method: "POST",
+      query: (data: { currentPassword: string; newPassword: string }) => ({
+        url: "/auth/change-password",
+        method: "PUT",
         data,
       }),
     }),
@@ -82,7 +82,7 @@ const api = baseApi.injectEndpoints({
 export const {
   useRegisterMutation,
   useLoginMutation,
-  useGetMyProfileQuery,    // 💡 নতুন হুক
+  useGetMyProfileQuery, // 💡 নতুন হুক
   useUpdateMyProfileMutation, // 💡 নতুন হুক
   useSendVerificationCodeMutation,
   useVerifyOtpMutation,

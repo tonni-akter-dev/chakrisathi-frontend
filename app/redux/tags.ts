@@ -2,21 +2,21 @@ export const tags = {
   users: "Users",
   reminders: "Reminders",
   notifications: "Notifications",
-  chat: "Chat", 
+  chat: "Chat",
   messages: "Messages",
   supportChat: "SupportChat",
   supportMessages: "SupportMessages",
   reviews: "Reviews",
   payments: "Payments",
   favorites: "Favorites",
-  subscription: "Subscription", 
+  subscription: "Subscription",
   wallet: "Wallet",
   transactions: "Transactions",
   contacts: "Contacts",
   profile: "Profile",
   supportTickets: "SupportTickets",
   circular: "Circular",
- 
+  settings: "Settings",
 } as const;
 
 export type Tag = (typeof tags)[keyof typeof tags];

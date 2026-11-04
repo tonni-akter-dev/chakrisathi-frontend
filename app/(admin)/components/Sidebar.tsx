@@ -1,17 +1,29 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Megaphone, Settings, LogOut, ExternalLink, ShieldCheck } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import { LayoutDashboard, FileText, Megaphone, Settings, LogOut, ExternalLink, ShieldCheck, UserCircle, Users } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'ড্যাশবোর্ড' },
   { href: '/dashboard/applications', icon: FileText, label: 'আবেদনসমূহ', badge: '১২' },
   { href: '/dashboard/circulars', icon: Megaphone, label: 'সার্কুলার' },
   { href: '/dashboard/settings', icon: Settings, label: 'সেটিংস' },
+    { href: '/dashboard/all-users', icon: Users, label: 'ইউজার' },
+  { href: '/dashboard/all-reviews', icon: Settings, label: 'রিভিউস' },
+  { href: '/dashboard/profile', icon: UserCircle, label: 'প্রোফাইল' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  // 💡 লগআউট
+  const handleLogout = () => {
+    Cookies.remove('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
   return (
     <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
@@ -29,7 +41,9 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          // /dashboard শুধু হুবহু মিললে, বাকিগুলো সাব-পেজেও active
+          const isActive =
+            item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
@@ -42,7 +56,6 @@ export default function Sidebar() {
                 <item.icon className={`h-5 w-5 ${isActive ? 'text-brand-600' : 'text-slate-400'}`} />
                 {item.label}
               </div>
-             
             </Link>
           );
         })}
@@ -54,7 +67,10 @@ export default function Sidebar() {
           <ExternalLink className="h-4 w-4 text-slate-400" />
           ওয়েবসাইট দেখুন
         </a>
-        <button className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50"
+        >
           <LogOut className="h-4 w-4" />
           লগআউট
         </button>

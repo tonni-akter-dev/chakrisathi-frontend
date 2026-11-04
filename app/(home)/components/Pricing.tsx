@@ -1,15 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
-import { SETTINGS } from '@/utils/data';
+import { SETTINGS as FALLBACK_SETTINGS } from '@/utils/data';
+import { useGetSettingsQuery } from '@/app/redux/features/apis/setting-api';
 import { calcFees, serviceFee } from '@/utils/fees';
 import { bn } from '@/utils/helpers';
 
 export default function Pricing() {
   const [n, setN] = useState(1);
   const [fee, setFee] = useState(112);
-
-  const pricing = calcFees(Array.from({ length: n }, () => ({ n: '', fee })), null, SETTINGS);
+  const { data: apiSettings, isLoading } = useGetSettingsQuery();
+  const SETTINGS = apiSettings ?? FALLBACK_SETTINGS;
+  
+  const govtFees = SETTINGS.govtFees?.length ? SETTINGS.govtFees : FALLBACK_SETTINGS.govtFees ?? [];
+  const selectedFee = govtFees.some((g:any) => g.amount === fee) ? fee : govtFees[0]?.amount ?? 0;
+  const pricing = calcFees(Array.from({ length: n }, () => ({ n: '', fee: selectedFee })), null, SETTINGS);
 
   return (
     <section className="container-site py-16" id="pricing">
@@ -21,7 +27,7 @@ export default function Pricing() {
         </p>
       </div>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-3">
+      <div className={`mb-6 grid gap-4 md:grid-cols-3 transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
         {[1, 2, 3].map((tier) => {
           const f = serviceFee(tier, SETTINGS);
           const save = tier * SETTINGS.tiers[0] - f;
@@ -58,18 +64,19 @@ export default function Pricing() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <label className="text-sm font-medium">সরকারি ফি</label>
-              <select value={fee} onChange={(e) => setFee(+e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none">
-                <option value={56}>৳৫৬ (২০তম গ্রেড)</option>
-                <option value={112}>৳১১২ (১৩–১৯তম)</option>
-                <option value={168}>৳১৬৮</option>
-                <option value={223}>৳২২৩ (৯–১২তম)</option>
+              <select value={selectedFee} onChange={(e) => setFee(+e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none">
+                {govtFees.map((g:any) => (
+                  <option key={g.amount} value={g.amount}>
+                    ৳{bn(g.amount)}{g.label ? ` (${g.label})` : ''}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
         </div>
 
         <div className="rounded-xl bg-slate-50 p-4">
-          <Line label={`সরকারি ফি (${bn(n)} × ৳${bn(fee)})`} val={`৳${bn(pricing.govt)}`} />
+          <Line label={`সরকারি ফি (${bn(n)} × ৳${bn(selectedFee)})`} val={`৳${bn(pricing.govt)}`} />
           <Line label={`SMS (${bn(n)} × ৳${bn(SETTINGS.smsFee)})`} val={`৳${bn(pricing.sms)}`} />
           <Line label={`সার্ভিস (${bn(n)}টি পদ)`} val={`৳${bn(pricing.service)}`} />
           <div className="mt-3 flex justify-between border-t-2 border-dashed border-slate-300 pt-3 text-lg font-bold">

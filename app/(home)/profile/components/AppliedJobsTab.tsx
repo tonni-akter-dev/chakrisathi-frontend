@@ -1,13 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, ArrowRight, Loader2, FileText } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Loader2, FileText, Star } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
+import { useGetMyReviewsQuery } from '@/app/redux/features/apis/review-apis';
+import ReviewModal from './ReviewModal';
 
 export default function AppliedJobsTab() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 💡 রিভিউ
+  const { data: myReviews = [] } = useGetMyReviewsQuery();
+  const [reviewFor, setReviewFor] = useState<{ id: string; title: string } | null>(null);
+  const reviewOf = (appId: string) => myReviews.find((r) => r.application === appId);
 
   // 💡 API থেকে ইউজারের সব আবেদন লোড করা
   useEffect(() => {
@@ -93,6 +100,31 @@ export default function AppliedJobsTab() {
                   {job.status}
                 </span>
                 
+                {/* 💡 রিভিউ — শুধু সম্পন্ন আবেদনে */}
+                {job.status === 'completed' && (() => {
+                  const rv = reviewOf(job._id);
+                  if (rv) {
+                    return (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-slate-500">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        {rv.rating}/5 ·{' '}
+                        {rv.status === 'approved' ? 'রিভিউ প্রকাশিত' : rv.status === 'hidden' ? 'রিভিউ জমা হয়েছে' : 'অনুমোদনের অপেক্ষায়'}
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      onClick={() =>
+                        setReviewFor({ id: job._id, title: job.posts?.map((p: any) => p.name).join(', ') || job.circularOrg })
+                      }
+                      className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 ring-1 ring-amber-200 transition hover:bg-amber-100"
+                    >
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      রিভিউ দিন
+                    </button>
+                  );
+                })()}
+
                 {/* বিস্তারিত বাটন */}
                 <Link 
                   href={`/track/${job.applicationId}`} 
@@ -104,6 +136,15 @@ export default function AppliedJobsTab() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* 💡 রিভিউ মোডাল */}
+      {reviewFor && (
+        <ReviewModal
+          applicationId={reviewFor.id}
+          title={reviewFor.title}
+          onClose={() => setReviewFor(null)}
+        />
       )}
     </div>
   );

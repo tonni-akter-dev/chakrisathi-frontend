@@ -68,6 +68,7 @@ export interface PostRow {
 }
 
 export interface Settings {
+  govtFees: any;
   smsFee: number;
   tiers: number[];
   helpline: string;

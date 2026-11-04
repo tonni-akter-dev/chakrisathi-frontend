@@ -4,6 +4,7 @@ export const SETTINGS: Settings = {
   smsFee: 15,
   tiers: [100, 150, 200], // [1 post, 2 posts, 3+ posts]
   helpline: '01700000000',
+  govtFees: undefined
 };
 
 export const CIRCULARS: Circular[] = [

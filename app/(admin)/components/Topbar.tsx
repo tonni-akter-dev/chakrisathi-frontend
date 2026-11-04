@@ -22,7 +22,7 @@ export default function Topbar() {
   const [user, setUser] = useState<any>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 💡 ১. লগইন করা ইউজারের ডাটা লোড করা (LocalStorage বা Cookies থেকে)
+  // 💡 ১. লগইন করা ইউজারের ডাটা লোড করা (LocalStorage থেকে)
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -147,11 +147,23 @@ export default function Topbar() {
 
                 <div className="border-t border-slate-100 my-1"></div>
 
-                <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                <button
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    router.push("/dashboard/profile");
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
+                >
                   <User className="h-4 w-4 text-slate-400" />
                   My Profile
                 </button>
-                <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                <button
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    router.push("/dashboard/settings");
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
+                >
                   <Settings className="h-4 w-4 text-slate-400" />
                   Account Settings
                 </button>

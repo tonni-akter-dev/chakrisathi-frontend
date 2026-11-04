@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
-import { Save, Wallet, Phone, ShieldCheck, Loader2 } from 'lucide-react';
+import { Save, Wallet, Phone, Loader2, Landmark, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 
@@ -14,6 +14,12 @@ export default function SettingsPage() {
     tiers: [100, 180, 250, 310, 360],
     extraPer: 50,
     helpline: '01700000000',
+    govtFees: [
+      { amount: 56, label: '২০তম গ্রেড' },
+      { amount: 112, label: '১৩–১৯তম গ্রেড' },
+      { amount: 168, label: '১০–১২তম গ্রেড' },
+      { amount: 223, label: '৯ম গ্রেড ও উপরে' },
+    ],
     methods: [
       { id: 'bkash', name: 'বিকাশ', number: '01700-000000', type: 'পার্সোনাল', active: true },
       { id: 'nagad', name: 'নগদ', number: '01700-000000', type: 'পার্সোনাল', active: true },
@@ -21,14 +27,22 @@ export default function SettingsPage() {
     ]
   });
 
-  // 💡 ১. API থেকে ডাটা লোড করা
+  // 💡 ১. API থেকে ডাটা লোড করা (টোকেন সহ)
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/settings`);
-        if (!res.ok) throw new Error('সেটিংস লোড করতে সমস্যা হয়েছে');
+        const token = Cookies.get('token');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('সেটিংস লোড করতে সমস্যা হয়েছে');
         const data = await res.json();
-        setSettings(data);
+        // পুরোনো DB ডাটায় govtFees না থাকলে ডিফল্ট রাখা
+        setSettings((prev) => ({
+          ...prev,
+          ...data,
+          govtFees: data.govtFees?.length ? data.govtFees : prev.govtFees,
+        }));
       } catch (error: any) {
         toast.error(error.message);
       } finally {
@@ -54,7 +68,7 @@ export default function SettingsPage() {
         body: JSON.stringify(settings)
       });
 
-      if (!res.ok) throw new Error('আপডেট ব্যর্থ হয়েছে');
+      if (!res.ok) throw new Error('আপডেট ব্যর্থ হয়েছে');
       
       toast.success('সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে!');
     } catch (error: any) {
@@ -195,8 +209,75 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Row 2: Security (পাসওয়ার্ড চেঞ্জ আপাতত ফ্রন্টএন্ডে ডেমো রাখা হলো) */}
+        {/* Row 1.5: Govt Fee Options */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="mb-5 flex items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2">
+              <Landmark className="h-5 w-5 text-brand-600" />
+              <h2 className="text-base font-bold text-slate-900">সরকারি ফি অপশন</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setSettings({ ...settings, govtFees: [...settings.govtFees, { amount: 0, label: '' }] })
+              }
+              className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <Plus className="h-3.5 w-3.5" /> নতুন ফি
+            </button>
+          </div>
+          <p className="mb-4 text-xs text-slate-500">
+            হোমপেজের &quot;খরচ হিসাব করুন&quot; অংশের সরকারি ফি ড্রপডাউনে এগুলো দেখাবে।
+          </p>
+
+          <div className="space-y-3">
+            {settings.govtFees.map((g, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="relative w-32 shrink-0">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">৳</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={g.amount}
+                    onChange={(e) => {
+                      const list = [...settings.govtFees];
+                      list[i] = { ...list[i], amount: Number(e.target.value) };
+                      setSettings({ ...settings, govtFees: list });
+                    }}
+                    className="w-full rounded-lg border border-slate-200 py-2 pl-7 pr-2 text-sm outline-none focus:border-brand-400"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={g.label}
+                  placeholder="গ্রেড / বিবরণ (যেমন: ২০তম গ্রেড)"
+                  onChange={(e) => {
+                    const list = [...settings.govtFees];
+                    list[i] = { ...list[i], label: e.target.value };
+                    setSettings({ ...settings, govtFees: list });
+                  }}
+                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSettings({ ...settings, govtFees: settings.govtFees.filter((_, idx) => idx !== i) })
+                  }
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-red-500 hover:bg-red-50"
+                  title="মুছুন"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+            {settings.govtFees.length === 0 && (
+              <p className="text-sm text-slate-400">কোনো ফি নেই — &quot;নতুন ফি&quot; চাপুন।</p>
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: Security (পাসওয়ার্ড চেঞ্জ আপাতত ফ্রন্টএন্ডে ডেমো রাখা হলো) */}
+        {/* <div className="rounded-2xl border border-slate-200 bg-white p-6">
           <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4">
             <ShieldCheck className="h-5 w-5 text-brand-600" />
             <h2 className="text-base font-bold text-slate-900">অ্যাডমিন সিকিউরিটি</h2>
@@ -220,7 +301,7 @@ export default function SettingsPage() {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Save Button */}
         <div className="flex justify-end">

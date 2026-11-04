@@ -1,114 +1,66 @@
 import baseApi from "../../baseApi";
 import { tags } from "../../tags";
 
-const api = baseApi.injectEndpoints({
+export type Review = {
+  _id: string;
+  name: string;
+  role: string;
+  image?: string;
+  rating: number;
+  text: string;
+  status?: "pending" | "approved" | "hidden";
+  application?: string;
+  applicationId?: string;
+  createdAt: string;
+};
+
+const reviewApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Get all reviews (for a specific user or property)
-    getReviews: builder.query({
-      query: (params) => ({
-        url: "/reviews",
-        method: "GET",
-        params,
-      }),
+    // হোমপেজ — অনুমোদিত রিভিউ (লগইন লাগবে না)
+    getPublicReviews: builder.query<Review[], void>({
+      query: () => ({ url: "/reviews/public", method: "GET" }),
       providesTags: [tags.reviews],
     }),
 
-    // Create a new review
-    createReview: builder.mutation({
-      query: (data) => ({
-        url: "/reviews",
-        method: "POST",
-        data, 
-      }),
-      invalidatesTags: [tags.reviews],
-    }),
-
-    // Get reviews by property ID
-    getPropertyReviewsById: builder.query({
-      query: (propertyId) => ({
-        url: `/properties/${propertyId}/reviews`,
-        method: "GET",
-      }),
+    // ইউজারের নিজের রিভিউ
+    getMyReviews: builder.query<Review[], void>({
+      query: () => ({ url: "/reviews/my", method: "GET" }),
       providesTags: [tags.reviews],
     }),
 
-    createPropertyReview: builder.mutation({
-      query: (data) => ({
-        url: "/property-reviews",
-        method: "POST",
-        data, 
-      }),
+    // রিভিউ দেওয়া
+    createReview: builder.mutation<Review, { applicationId: string; rating: number; text: string }>({
+      query: (data) => ({ url: "/reviews", method: "POST", data }),
       invalidatesTags: [tags.reviews],
     }),
 
-    // Update a review
-    updateReview: builder.mutation({
-      query: ({ id, ...data }) => ({
-        url: `/reviews/${id}`,
-        method: "PUT",
-        data,
-      }),
+    // অ্যাডমিন — সব রিভিউ
+    getAdminReviews: builder.query<Review[], { status?: string } | void>({
+      query: (params) => ({ url: "/reviews/admin", method: "GET", params: params || {} }),
+      providesTags: [tags.reviews],
+    }),
+
+    // অ্যাডমিন — স্ট্যাটাস বদলানো
+    updateReviewStatus: builder.mutation<Review, { id: string; status: "pending" | "approved" | "hidden" }>({
+      query: ({ id, status }) => ({ url: `/reviews/admin/${id}`, method: "PATCH", data: { status } }),
       invalidatesTags: [tags.reviews],
     }),
 
-    // Delete a review
-    deleteReview: builder.mutation({
-      query: (id) => ({
-        url: `/reviews/${id}`,
-        method: "DELETE",
-      }),
+    // অ্যাডমিন — মুছে ফেলা
+    deleteReview: builder.mutation<{ msg: string }, string>({
+      query: (id) => ({ url: `/reviews/admin/${id}`, method: "DELETE" }),
       invalidatesTags: [tags.reviews],
-    }),
-
-    // Update property review
-    updatePropertyReview: builder.mutation({
-      query: ({ id, ...data }) => ({
-        url: `/reviews/property/${id}`,
-        method: "PUT",
-        data,
-      }),
-      invalidatesTags: [tags.reviews],
-
-    }),
-
-    // Delete property review
-    deletePropertyReview: builder.mutation({
-      query: (id) => ({
-        url: `/reviews/property/${id}`,
-        method: "DELETE",
-      }),
-             invalidatesTags: [tags.reviews],
-    }),
-
-    // User review endpoints (based on your image showing "User Review")
-    getUserReviews: builder.query({
-      query: (userId) => ({
-        url: `/users/${userId}/reviews`,
-        method: "GET",
-      }),
-       providesTags: [tags.reviews],
-    }),
-
-    reviewUser: builder.mutation({
-      query: (data) => ({
-        url: "/user-reviews",
-        method: "POST",
-        data,
-      }),
-       invalidatesTags: [tags.reviews],
     }),
   }),
 });
 
 export const {
-  useGetReviewsQuery,
+  useGetPublicReviewsQuery,
+  useGetMyReviewsQuery,
   useCreateReviewMutation,
-  useGetPropertyReviewsByIdQuery,
-  useCreatePropertyReviewMutation,
-  useUpdateReviewMutation,
+  useGetAdminReviewsQuery,
+  useUpdateReviewStatusMutation,
   useDeleteReviewMutation,
-  useUpdatePropertyReviewMutation,
-  useDeletePropertyReviewMutation,
-  useGetUserReviewsQuery,
-  useReviewUserMutation,
-} = api;
+} = reviewApi;
+
+export default reviewApi;

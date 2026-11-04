@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, User, Heart, Briefcase, 
-  Receipt, Lock, LogOut, Menu, X
+  Receipt, Lock, LogOut, Menu, X,
+  Star
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 
@@ -13,6 +14,7 @@ const sidebarItems = [
   { id: 'my-profile', label: 'My profile', href: '/profile/my-profile', icon: User },
   { id: 'applied-jobs', label: 'Applied jobs', href: '/profile/applied-jobs', icon: Briefcase, hasArrow: true },
   { id: 'wishlist', label: 'My wishlist', href: '/profile/wishlist', icon: Heart, hasArrow: true },
+  { id: 'my-reviews', label: 'My reviews', href: '/profile/my-reviews', icon: Star, hasArrow: true },
   { id: 'billing', label: 'Transaction & billing', href: '/profile/billing', icon: Receipt },
   { id: 'change-password', label: 'Change password', href: '/profile/change-password', icon: Lock },
 ];
