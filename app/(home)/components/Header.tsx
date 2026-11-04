@@ -36,6 +36,9 @@ export default function Header() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const dashboardHref =
+    user?.role === "admin" ? "/dashboard" : "/profile/dashboard";
+
   useEffect(() => {
     setIsMounted(true);
     const storedUser = localStorage.getItem("user");
@@ -149,7 +152,7 @@ export default function Header() {
                   </div>
 
                   <Link
-                    href="/dashboard"
+                    href={dashboardHref}
                     onClick={() => setIsDropdownOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                   >
@@ -231,7 +234,7 @@ export default function Header() {
                   </div>
                 </div>
                 <Link
-                  href="/dashboard"
+                  href={dashboardHref}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                   onClick={() => setOpen(false)}
                 >
