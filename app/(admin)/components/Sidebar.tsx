@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { LayoutDashboard, FileText, Megaphone, Settings, LogOut, ExternalLink, ShieldCheck, UserCircle, Users } from 'lucide-react';
+import { LayoutDashboard, FileText, Megaphone, Settings, LogOut, ExternalLink, ShieldCheck, UserCircle, Users, Star } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'ড্যাশবোর্ড' },
@@ -10,7 +10,7 @@ const navItems = [
   { href: '/dashboard/circulars', icon: Megaphone, label: 'সার্কুলার' },
   { href: '/dashboard/settings', icon: Settings, label: 'সেটিংস' },
     { href: '/dashboard/all-users', icon: Users, label: 'ইউজার' },
-  { href: '/dashboard/all-reviews', icon: Settings, label: 'রিভিউস' },
+  { href: '/dashboard/all-reviews', icon: Star, label: 'রিভিউস' },
   { href: '/dashboard/profile', icon: UserCircle, label: 'প্রোফাইল' },
 ];
 
