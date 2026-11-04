@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use client';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { useGetAllCircularsQuery } from '@/app/redux/features/apis/circular-api';
 import { bn } from '@/utils/helpers';
@@ -13,11 +13,16 @@ import DetailModal from './DetailModal';
 const dhakaDate = (value: string | number | Date) =>
   new Date(value).toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
+const subscribeToday = () => () => {};
+const readToday = () => dhakaDate(Date.now());
+const emptyToday = () => '';
+
 export default function JobBoard() {
   const { state, update } = useApp();
   
   const [selectedCircular, setSelectedCircular] = useState<any>(null);
-  const [today] = useState(() => dhakaDate(Date.now()));
+  // আজকের তারিখ শুধু ব্রাউজারে পড়া হয়; build-এর সময় খালি থাকে
+  const today = useSyncExternalStore(subscribeToday, readToday, emptyToday);
 
   const { data: allCirculars = [], isLoading, isError } = useGetAllCircularsQuery({
     search: state.q,
