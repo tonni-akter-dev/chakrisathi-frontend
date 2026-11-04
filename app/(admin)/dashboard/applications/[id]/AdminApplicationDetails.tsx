@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2, Clock, Loader2, Save, Download } from 'lucide-
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import { missingInfo } from '@/utils/applications';
 
 export default function AdminApplicationDetails() {
   const params = useParams();
@@ -68,7 +69,10 @@ export default function AdminApplicationDetails() {
         })
       });
 
-      if (!res.ok) throw new Error('আপডেট ব্যর্থ হয়েছে');
+      if (!res.ok) {
+        const problem = await res.json().catch(() => ({}));
+        throw new Error(problem.error || 'আপডেট ব্যর্থ হয়েছে');
+      }
       
       toast.success('আবেদন সফলভাবে আপডেট হয়েছে!');
       router.refresh();
@@ -87,7 +91,7 @@ export default function AdminApplicationDetails() {
       {/* হেডার */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/applications" className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50">
+          <Link href="/dashboard/applications" className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50">
             <ArrowLeft className="h-5 w-5 text-slate-600" />
           </Link>
           <div>
@@ -196,12 +200,32 @@ export default function AdminApplicationDetails() {
                 onChange={(e) => setApp({ ...app, paymentStatus: e.target.value })}
                 className="w-full rounded-lg border border-slate-200 p-2.5 text-sm font-bold outline-none focus:border-brand-500"
               >
-                <option value="pending">পেন্ডিং (যাচাই বাকি)</option>
-                <option value="verified">ভেরিফাইড (টাকা পেয়েছি)</option>
+                <option value="unpaid">পেমেন্ট করেননি</option>
+                <option value="pending">অনুমোদনের অপেক্ষায় (যাচাই বাকি)</option>
+                <option value="verified" disabled={!app.trxId}>ভেরিফাইড (টাকা পেয়েছি)</option>
                 <option value="rejected">বাতিল (ভুল পেমেন্ট)</option>
               </select>
             </div>
           </div>
+
+          {/* TrxID মিলিয়ে তবেই ভেরিফাইড করুন */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="font-bold text-slate-900 border-b pb-2 mb-4">পেমেন্ট তথ্য</h3>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+              <dt className="text-slate-500">মোট ফি</dt><dd className="font-bold text-slate-900">৳{app.amount}</dd>
+              <dt className="text-slate-500">মাধ্যম</dt><dd className="font-medium text-slate-900">{app.paymentMethod || 'দেননি'}</dd>
+              <dt className="text-slate-500">প্রেরক</dt><dd className="font-medium text-slate-900">{app.senderNumber || 'দেননি'}</dd>
+              <dt className="text-slate-500">TrxID</dt><dd className="font-bold text-slate-900 break-all">{app.trxId || 'দেননি'}</dd>
+            </dl>
+          </div>
+
+          {/* যে তথ্য ছাড়া টেলিটকে আবেদন করা যাবে না */}
+          {missingInfo(app).length > 0 && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+              <h3 className="font-bold mb-1">তথ্য অসম্পূর্ণ</h3>
+              <p>{missingInfo(app).join(', ')}</p>
+            </div>
+          )}
 
           {/* ইউজারের আপলোড করা ডকুমেন্টস */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

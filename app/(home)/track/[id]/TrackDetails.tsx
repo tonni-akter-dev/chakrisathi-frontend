@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, FileText, CheckCircle2, Clock, MapPin, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
+import { PAY_STATE, payState } from '@/utils/applications';
 
 
 export default function TrackDetail() {
@@ -63,8 +64,12 @@ export default function TrackDetail() {
               </div>
             </div>
             <div className="text-left sm:text-right">
-              <div className="text-sm text-slate-500">মোট পরিশোধিত</div>
+              <div className="text-sm text-slate-500">{app.paymentStatus === 'verified' ? 'মোট পরিশোধিত' : 'মোট ফি'}</div>
               <div className="text-2xl font-bold text-brand-600">৳{app.amount}</div>
+              <span className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${PAY_STATE[payState(app)].cls}`}>{PAY_STATE[payState(app)].label}</span>
+              {['unpaid', 'rejected'].includes(payState(app)) && app.status !== 'rejected' && (
+                <Link href={`/profile/applied-jobs/${app.applicationId}#payment`} className="mt-2 block text-sm font-bold text-brand-600 hover:underline">Pay Now</Link>
+              )}
             </div>
           </div>
 

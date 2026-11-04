@@ -53,7 +53,9 @@ export default function LoginPage() {
 
       // ১.৫ সেকেন্ড পর রিডাইরেক্ট হবে
       setTimeout(() => {
-        router.push('/'); 
+        // লগইনের আগে যে পেজে ছিলেন সেখানে ফেরা; শুধু এই সাইটের ভেতরের পথ নেওয়া হয়
+        const next = new URLSearchParams(window.location.search).get('next');
+        router.push(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
         router.refresh(); // 💡 মিডলওয়্যার যাতে নতুন কুকি রিড করতে পারে তাই refresh
       }, 1500);
 

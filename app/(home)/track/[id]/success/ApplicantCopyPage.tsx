@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { apiJson } from '@/utils/applications';
 import { 
   ArrowLeft, ShieldCheck, CheckCircle2, 
   ExternalLink, Loader2, Info
@@ -16,10 +17,9 @@ export default function ApplicantCopyPage() {
   useEffect(() => {
     const fetchApp = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/applications/${params.id}`);
-        if (!res.ok) throw new Error('আবেদন পাওয়া যায়নি');
-        const data = await res.json();
-        setApp(data);
+        // নাম ও মোবাইল শুধু মালিক বা অ্যাডমিন পান, তাই লগইনের token পাঠানো হয়
+        const data = await apiJson<any>(`/applications/${params.id}`);
+        setApp(data.publicView ? null : data);
       } catch (error) {
         console.error(error);
         setApp(null);

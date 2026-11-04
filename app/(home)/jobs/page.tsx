@@ -11,16 +11,27 @@ import {
 import { useGetAllCircularsQuery } from '@/app/redux/features/apis/circular-api';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
+import Image from "next/image";
+import logo from "@/public/govt-logo.png";
+
+const dhakaDate = (value: string | number | Date) =>
+  new Date(value).toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
 export default function JobsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  // একাধিক কার্ড এক্সপ্যান্ড করার জন্য অ্যারে স্টেট
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   
   const [userWishlist, setUserWishlist] = useState<any[]>([]);
   const [isUpdatingWishlist, setIsUpdatingWishlist] = useState<string | null>(null);
 
-  const { data: circulars = [], isLoading, isError } = useGetAllCircularsQuery({});
+  const [today] = useState(() => dhakaDate(Date.now()));
+
+  const { data: allCirculars, isLoading, isError } = useGetAllCircularsQuery({});
+
+  const circulars = useMemo(
+    () => (allCirculars || []).filter((job: any) => dhakaDate(job.end) >= today),
+    [allCirculars, today],
+  );
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -51,11 +62,11 @@ export default function JobsPage() {
         job.loc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.posts?.some((p: any) => p.n?.toLowerCase().includes(searchQuery.toLowerCase()))
       );
-      // ম্যাচিং সব সার্কুলারের আইডি অ্যারেতে সেট করে দিলাম, যাতে ড্রপডাউন ওপেন হয়
+      // ম্যাচিং সব সার্কুলারের আইডি অ্যারেতে সেট করে দিলাম, যাতে ড্রপডাউন ওপেন হয়
       const ids = matchedJobs.map((j: any) => j._id || j.id);
       setExpandedIds(ids);
     } else {
-      // সার্চ খালি করলে সব ড্রপডাউন বন্ধ হয়ে যাবে
+      // সার্চ খালি করলে সব ড্রপডাউন বন্ধ হয়ে যাবে
       setExpandedIds([]);
     }
   }, [searchQuery, circulars]);
@@ -82,7 +93,7 @@ export default function JobsPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUserWishlist(userWishlist.filter(item => !(item.circularId === circularId && item.postName === postName)));
-        toast.success('উইশলিস্ট থেকে সরানো হয়েছে');
+        toast.success('উইশলিস্ট থেকে সরানো হয়েছে');
       } else {
         await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist`, {
           method: 'POST',
@@ -90,10 +101,10 @@ export default function JobsPage() {
           body: JSON.stringify({ circularId, postName })
         });
         setUserWishlist([...userWishlist, { circularId, postName }]);
-        toast.success('উইশলিস্টে সেভ করা হয়েছে!');
+        toast.success('উইশলিস্টে সেভ করা হয়েছে!');
       }
     } catch (error) {
-      toast.error('সমস্যা হয়েছে! আবার চেষ্টা করুন।');
+      toast.error('সমস্যা হয়েছে! আবার চেষ্টা করুন।');
     } finally {
       setIsUpdatingWishlist(null);
     }
@@ -156,7 +167,7 @@ export default function JobsPage() {
           </div>
         </div>
 
-        {/* কন্টেন্ট এরিয়া */}
+        {/* কন্টেন্ট এরিয়া */}
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((skeleton) => (
@@ -175,20 +186,20 @@ export default function JobsPage() {
         ) : isError ? (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 p-10 text-center text-rose-600 flex flex-col items-center">
             <X className="h-10 w-10 mb-3 text-rose-400" />
-            <h3 className="font-bold text-lg">সার্কুলার লোড করতে সমস্যা হয়েছে।</h3>
+            <h3 className="font-bold text-lg">সার্কুলার লোড করতে সমস্যা হয়েছে।</h3>
             <p className="text-sm mt-1">পেজ রিফ্রেশ করে আবার চেষ্টা করুন।</p>
           </div>
         ) : filteredJobs.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-16 text-center shadow-sm">
             <Search className="h-14 w-14 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-800">কোনো চাকরি পাওয়া যায়নি!</h3>
-            <p className="text-slate-500 mt-2">অন্য কোনো শব্দ দিয়ে সার্চ করে দেখুন।</p>
+            <h3 className="text-xl font-bold text-slate-800">কোনো চাকরি পাওয়া যায়নি!</h3>
+            <p className="text-slate-500 mt-2">অন্য কোনো শব্দ দিয়ে সার্চ করে দেখুন।</p>
           </div>
         ) : (
           <div className="space-y-4">
             {filteredJobs.map((job: any) => {
               const jobId = job._id || job.id;
-              const isActive = new Date(job.end) > new Date();
+              const isActive = dhakaDate(job.end) >= today;
               // অ্যারেতে আইডি থাকলে true হবে
               const isExpanded = expandedIds.includes(jobId);
               const totalVacancies = job.total || job.posts?.reduce((sum: number, p: any) => sum + (Number(p.v) || 0), 0) || 0;
@@ -208,12 +219,9 @@ export default function JobsPage() {
                     className={`flex cursor-pointer items-center justify-between p-5 transition-colors ${isExpanded ? 'bg-brand-50/30' : 'hover:bg-slate-50/50'}`}
                   >
                     <div className="flex items-center gap-4">
-                      <div 
-                        className="grid h-14 w-14 flex-none place-items-center rounded-xl text-lg font-bold text-white shadow-sm"
-                        style={{ background: job.color || '#ea580c' }}
-                      >
-                        {job.ab || 'JOB'}
-                      </div>
+                        <div className="grid h-12 w-12 flex-none place-items-center rounded-lg ">
+                    <Image src={logo} alt={"govt logo"} />
+                  </div>
                       <div>
                         <h3 className={`text-lg font-bold transition-colors ${isExpanded ? 'text-brand-700' : 'text-slate-900 group-hover:text-brand-600'}`}>
                           {job.title}

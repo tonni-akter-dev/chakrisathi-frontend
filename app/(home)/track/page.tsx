@@ -319,7 +319,7 @@ export default function TrackPage() {
 
                                                 <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
                                                     <div className="text-sm text-slate-500">
-                                                        মোট পরিশোধিত: <span className="font-bold text-slate-900">৳{app.amount}</span>
+                                                        {app.paymentStatus === 'verified' ? 'মোট পরিশোধিত' : 'মোট ফি'}: <span className="font-bold text-slate-900">৳{app.amount}</span>
                                                     </div>
                                                     <Link href={`/track/${app.applicationId}`} className="flex items-center gap-1 text-sm font-bold text-brand-600 hover:text-brand-700">
                                                         বিস্তারিত দেখুন <ChevronRight className="h-4 w-4" />

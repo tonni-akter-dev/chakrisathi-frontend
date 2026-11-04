@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { X, MapPin, ExternalLink } from 'lucide-react';
+import { useGetSettingsQuery } from '@/app/redux/features/apis/setting-api';
 
 interface Props {
   circular: any | null;
@@ -11,6 +12,7 @@ interface Props {
 
 export default function DetailModal({ circular: c, onClose }: Props) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const { data: settings, isLoading: isSettingsLoading } = useGetSettingsQuery(undefined, { skip: !c });
 console.log(c,"Detail modal details")
   useEffect(() => {
     if (!c) return;
@@ -60,13 +62,22 @@ console.log(c,"Detail modal details")
   const totalVacancies = c.total || c.posts?.reduce((sum: number, p: any) => sum + (Number(p.v) || 0), 0) || 0;
   const isActive = new Date(c.end) > new Date();
 
+  // সার্ভিস চার্জ অ্যাডমিন সেটিংস থেকে আসে
+  const lowestCharge = settings?.tiers?.[0];
+  const serviceCharge =
+    lowestCharge !== undefined && settings?.smsFee !== undefined
+      ? `৳${toBn(lowestCharge)} থেকে + SMS ৳${toBn(settings.smsFee)}/পদ`
+      : isSettingsLoading
+        ? 'লোড হচ্ছে...'
+        : 'এই মুহূর্তে পাওয়া যায়নি';
+
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div 
         className="relative w-full max-w-4xl max-h-[95vh] flex flex-col rounded-2xl bg-[#fafafa] shadow-2xl overflow-hidden" 
         onClick={(e) => e.stopPropagation()}>
         
-        {/* ================= হেডার সেকশন (টিল গ্রেডিয়েন্ট) ================= */}
+        {/* ================= হেডার সেকশন (টিল গ্রেডিয়েন্ট) ================= */}
         <div className="relative bg-linear-to-br from-[#0E9F8E] to-[#1D5B5A] p-6 sm:p-8 text-white overflow-hidden flex-none">
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10" />
             <button 
@@ -77,7 +88,7 @@ console.log(c,"Detail modal details")
 
           <div className="relative flex items-start gap-4 mb-6">
             <div className="grid h-14 w-16 flex-none place-items-center rounded-lg border-2 border-white/40 bg-white/10 font-bold tracking-widest text-white backdrop-blur-sm text-lg">
-              {c.ab || 'JOB'}
+              {c.ab}
             </div>
             <div>
               <h1 className="text-2xl font-bold">{c.org}</h1>
@@ -137,11 +148,11 @@ console.log(c,"Detail modal details")
             </div>
             <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
               <p className="text-xs text-slate-500 font-medium mb-1">কোথায় আবেদন করতে পারবে</p>
-              <p className="text-sm font-bold text-slate-900">{c.district || 'সকল জেলা'}</p>
+              <p className="text-sm font-bold text-slate-900">{c.district || 'বিজ্ঞপ্তি দেখুন'}</p>
             </div>
             <div className="rounded-xl bg-[#f8f5ff] p-4 border border-[#e9d5ff]/50">
               <p className="text-xs text-slate-500 font-medium mb-1">আমাদের সার্ভিস চার্জ</p>
-              <p className="text-sm font-bold text-slate-900">৳১০০ থেকে + SMS ৳১৫/পদ</p>
+              <p className="text-sm font-bold text-slate-900">{serviceCharge}</p>
             </div>
           </div>
 
@@ -172,7 +183,7 @@ console.log(c,"Detail modal details")
                       <div className="text-xs text-slate-500 mt-0.5">{p.sal}</div>
                     </td>
                     <td className="px-4 py-4 text-center font-bold text-slate-900">
-                      ৳{toBn(p.fee || 112)}
+                      {p.fee ? `৳${toBn(p.fee)}` : 'বিজ্ঞপ্তি দেখুন'}
                     </td>
                   </tr>
                 ))}
@@ -194,25 +205,10 @@ console.log(c,"Detail modal details")
             href={`/jobs/${c._id}`} 
             target="_blank" 
             rel="noreferrer" 
-            className="flex-1 flex items-center justify-center gap-2 rounded-full border-2 border-[#7c3aed] px-4 py-3 text-sm font-bold text-[#7c3aed] hover:bg-[#f3e8ff] transition">
-            <ExternalLink className="h-4 w-4" /> মূল বিজ্ঞপ্তি / নিজে আবেদন
+            className="w-fit flex items-center justify-center gap-2 rounded-full border-2 border-[#7c3aed] px-4 py-3 text-sm font-bold text-[#7c3aed] hover:bg-[#f3e8ff] transition">
+            <ExternalLink className="h-4 w-4" /> মূল বিজ্ঞপ্তি
           </Link>
-          {isActive && c.allowServiceApply !== false ? (
-            <Link 
-              href={`/apply/${c._id || c.id}`} 
-              onClick={onClose}
-              className="flex-1 flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-pink-500 to-orange-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-orange-500/30 hover:scale-[1.02] transition"
-            >
-              আবেদন করুন
-            </Link>
-          ) : (
-            <button 
-              disabled 
-              className="flex-1 rounded-full bg-slate-200 px-4 py-3 text-sm font-bold text-slate-400 cursor-not-allowed"
-            >
-              আবেদন শেষ
-            </button>
-          )}
+         
         </div>
       </div>
     </div>

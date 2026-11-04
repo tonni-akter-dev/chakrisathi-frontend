@@ -2,6 +2,7 @@
 'use client';
 import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { PAY_STATE, missingInfo, payState } from '@/utils/applications';
 
 const STATUS_MAP: Record<string, { label: string, color: string, bg: string }> = {
   pending: { label: 'পেন্ডিং', color: 'text-amber-700', bg: 'bg-amber-100' },
@@ -67,12 +68,20 @@ export default function ApplicationTable({ data }: { data: any[] }) {
                   </td>
                   <td className="px-5 py-4">
                     <div className="font-bold text-slate-900">৳{app.amount}</div>
-                    <div className="text-xs text-slate-500">TrxID: {app.trxId}</div>
+                    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${PAY_STATE[payState(app)].cls}`}>
+                      {PAY_STATE[payState(app)].label}
+                    </span>
+                    {app.trxId && <div className="mt-1 text-xs text-slate-500">TrxID: {app.trxId}</div>}
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${st.bg} ${st.color}`}>
                       {st.label}
                     </span>
+                    {missingInfo(app).length > 0 && (
+                      <div className="mt-1 text-xs font-semibold text-amber-700" title={missingInfo(app).join(', ')}>
+                        তথ্য অসম্পূর্ণ
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <span className="text-xs font-semibold text-slate-600">

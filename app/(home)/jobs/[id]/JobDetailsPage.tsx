@@ -14,7 +14,6 @@ import {
   MapPin,
   Building2,
   Calendar,
-  CheckCircle2,
   Heart,
   ArrowRight,
   Loader2,
@@ -28,6 +27,8 @@ import {
   useGetSingleCircularQuery,
   useGetAllCircularsQuery,
 } from "@/app/redux/features/apis/circular-api";
+import Image from "next/image";
+import logo from "@/public/govt-logo.png";
 
 export default function JobDetailsPage() {
   const params = useParams();
@@ -39,8 +40,6 @@ export default function JobDetailsPage() {
     isError,
   } = useGetSingleCircularQuery(jobId, { skip: !jobId });
   const { data: allJobs } = useGetAllCircularsQuery({});
-
-  // ================= Wishlist State =================
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showPostPicker, setShowPostPicker] = useState(false);
@@ -67,16 +66,14 @@ export default function JobDetailsPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       if (res.ok) {
         const data = await res.json();
         const arr = Array.isArray(data) ? data : [];
         const filtered = arr.filter((w: any) => {
           const cId =
-            typeof w.circularId === "object"
-              ? w.circularId?._id
-              : w.circularId;
+            typeof w.circularId === "object" ? w.circularId?._id : w.circularId;
           return cId === jobId;
         });
         setWishlistItems(filtered);
@@ -116,9 +113,9 @@ export default function JobDetailsPage() {
       const res = isRemoving
         ? await fetch(
             `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist?circularId=${jobId}&postName=${encodeURIComponent(
-              postName
+              postName,
             )}`,
-            { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+            { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
           )
         : await fetch(
             `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v1/users/wishlist`,
@@ -129,7 +126,7 @@ export default function JobDetailsPage() {
                 Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ circularId: jobId, postName }),
-            }
+            },
           );
 
       if (!res.ok) {
@@ -169,11 +166,10 @@ export default function JobDetailsPage() {
     );
 
   const isActive = new Date(job.end) > new Date();
-
   const posts: any[] = Array.isArray(job.posts) ? job.posts : [];
   const postNames = posts.map(getPostName).filter(Boolean);
   const fallbackPostName = job.title as string;
-  
+
   const dbApplyLink = job.applyLink || job.link || job.pdfUrl || "#";
 
   return (
@@ -181,16 +177,19 @@ export default function JobDetailsPage() {
       <div className="container-site">
         {/* Breadcrumb */}
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-          <Link href="/" className="hover:text-brand-600 transition">Home</Link>
+          <Link href="/" className="hover:text-brand-600 transition">
+            Home
+          </Link>
           <ChevronRight className="h-4 w-4" />
-          <Link href="/jobs" className="hover:text-brand-600 transition">Jobs</Link>
+          <Link href="/jobs" className="hover:text-brand-600 transition">
+            Jobs
+          </Link>
           <ChevronRight className="h-4 w-4" />
           <span className="text-slate-800 font-semibold">{job.title}</span>
         </div>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
           {/* ============ Sidebar (Related Jobs) ============ */}
           <div className="lg:col-span-4 xl:col-span-3 space-y-4 hidden lg:block">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">
@@ -205,11 +204,8 @@ export default function JobDetailsPage() {
                   href={`/jobs/${jId}`}
                   className="group flex gap-3 rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-brand-300 hover:shadow-md"
                 >
-                  <div
-                    className="grid h-12 w-12 flex-none place-items-center rounded-lg text-white font-bold"
-                    style={{ background: j.color || "#ea580c" }}
-                  >
-                    {j.ab || "JOB"}
+                  <div className="grid h-12 w-12 flex-none place-items-center rounded-lg ">
+                    <Image src={logo} alt={"govt logo"} />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 leading-tight group-hover:text-brand-600 line-clamp-2 transition-colors">
@@ -240,18 +236,13 @@ export default function JobDetailsPage() {
 
           {/* ============ Main Content ============ */}
           <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-            
             {/* Header card (Redesigned) */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex flex-col lg:flex-row justify-between items-start gap-6 lg:gap-8">
-                
                 {/* Left Side: Info */}
                 <div className="flex items-start gap-5 flex-1">
-                  <div
-                    className="grid h-20 w-20 flex-none place-items-center rounded-2xl text-white font-bold text-2xl shadow-sm"
-                    style={{ background: job.color || "#ea580c" }}
-                  >
-                    {job.ab || "JOB"}
+                  <div className="grid h-12 w-12 flex-none place-items-center rounded-lg ">
+                    <Image src={logo} alt={"govt logo"} />
                   </div>
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
@@ -270,7 +261,9 @@ export default function JobDetailsPage() {
                     >
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          isActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
+                          isActive
+                            ? "bg-emerald-500 animate-pulse"
+                            : "bg-rose-500"
                         }`}
                       ></span>
                       {isActive ? "Status: Live" : "Status: Closed"}
@@ -301,7 +294,9 @@ export default function JobDetailsPage() {
                             ) : (
                               <Heart
                                 className={`h-4 w-4 ${
-                                  wishlisted ? "fill-rose-600 text-rose-600" : ""
+                                  wishlisted
+                                    ? "fill-rose-600 text-rose-600"
+                                    : ""
                                 }`}
                               />
                             )}
@@ -321,7 +316,9 @@ export default function JobDetailsPage() {
                         >
                           <Heart
                             className={`h-4 w-4 ${
-                              wishlistItems.length > 0 ? "fill-rose-600 text-rose-600" : ""
+                              wishlistItems.length > 0
+                                ? "fill-rose-600 text-rose-600"
+                                : ""
                             }`}
                           />
                           {wishlistItems.length > 0
@@ -415,7 +412,7 @@ export default function JobDetailsPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-4 border border-slate-100">
                   <div className="grid h-10 w-10 place-items-center rounded-full bg-rose-100 text-rose-600 flex-none">
                     <Calendar className="h-5 w-5" />
@@ -456,20 +453,23 @@ export default function JobDetailsPage() {
             {/* Read Before Apply */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                 <Info className="h-5 w-5 text-brand-600" /> Read Before Apply
+                <Info className="h-5 w-5 text-brand-600" /> Read Before Apply
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                আমাদের মাধ্যমে আবেদন করতে চাইলে <strong>"Apply With Us"</strong> বাটনে ক্লিক করুন। 
-                অথবা সরাসরি অফিসিয়াল ওয়েবসাইটে আবেদন করতে <strong>"Apply Yourself"</strong> বাটনে ক্লিক করুন। 
-                আবেদন করার আগে অবশ্যই মূল বিজ্ঞপ্তিটি (PDF) ভালোভাবে পড়ে নিন।
+                আমাদের মাধ্যমে আবেদন করতে চাইলে <strong>"Apply With Us"</strong>{" "}
+                বাটনে ক্লিক করুন। অথবা সরাসরি অফিসিয়াল ওয়েবসাইটে আবেদন করতে{" "}
+                <strong>"Apply Yourself"</strong> বাটনে ক্লিক করুন। আবেদন করার
+                আগে অবশ্যই মূল বিজ্ঞপ্তিটি (PDF) ভালোভাবে পড়ে নিন।
               </p>
               <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-800 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-slate-400" /> Deadline: {formatDate(job.end)}
+                  <Calendar className="h-4 w-4 text-slate-400" /> Deadline:{" "}
+                  {formatDate(job.end)}
                 </span>
                 <span className="hidden sm:inline text-slate-300">|</span>
                 <span className="flex items-center gap-2 text-rose-600">
-                  <Briefcase className="h-4 w-4" /> Vacancies: {job.posts?.length || 0}
+                  <Briefcase className="h-4 w-4" /> Vacancies:{" "}
+                  {job.posts?.length || 0}
                 </span>
               </div>
 

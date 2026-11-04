@@ -10,8 +10,8 @@ export interface Pricing {
 
 export function serviceFee(n: number, s: Settings): number {
   if (n <= 1) return s.tiers[0];
-  if (n === 2) return s.tiers[1];
-  return s.tiers[2] + (n - 3) * 20;
+  if (n <= s.tiers.length) return s.tiers[n - 1];
+  return s.tiers[s.tiers.length - 1] + (n - s.tiers.length) * (s.extraPer ?? 50);
 }
 
 export function calcFees(

@@ -9,19 +9,24 @@ import { useApp } from '@/utils/AppContext';
 import CircularCard from './CircularCard';
 import PostTable from './PostTable';
 import DetailModal from './DetailModal';
-import ApplySupportModal from './ApplySupportModal';
+
+const dhakaDate = (value: string | number | Date) =>
+  new Date(value).toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
 export default function JobBoard() {
   const { state, update } = useApp();
   
   const [selectedCircular, setSelectedCircular] = useState<any>(null);
-  const [applyCircular, setApplyCircular] = useState<any>(null);
+  const [today] = useState(() => dhakaDate(Date.now()));
 
-  const { data: circulars = [], isLoading, isError } = useGetAllCircularsQuery({
+  const { data: allCirculars = [], isLoading, isError } = useGetAllCircularsQuery({
     search: state.q,
     cat: state.cat,
     sort: state.sort,
   });
+
+  // শেষ তারিখ পেরিয়ে গেলে জব বোর্ডে দেখানো হয় না
+  const circulars = allCirculars.filter((c: any) => dhakaDate(c.end) >= today);
 
   const totalP = circulars.reduce((sum: number, c: any) => sum + (c.total || c.posts?.length || 0), 0);
 
@@ -86,7 +91,7 @@ export default function JobBoard() {
         </div>
       ) : isError ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-12 text-center text-rose-600 font-medium">
-          ডাটা লোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
+          ডাটা লোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
         </div>
       ) : (
         <>
@@ -104,7 +109,6 @@ export default function JobBoard() {
                   circular={c} 
                   index={i} 
                   onDetail={() => setSelectedCircular(c)} 
-                  onApply={() => setApplyCircular(c)} 
                 />
               ))} 
             </div>
@@ -113,19 +117,11 @@ export default function JobBoard() {
           )}
         </>
       )}
-
       {/* মডালসমূহ */}
       {selectedCircular && (
         <DetailModal 
           circular={selectedCircular} 
           onClose={() => setSelectedCircular(null)} 
-        />
-      )}
-      
-      {applyCircular && (
-        <ApplySupportModal 
-          circular={applyCircular} 
-          onClose={() => setApplyCircular(null)} 
         />
       )}
     </section>

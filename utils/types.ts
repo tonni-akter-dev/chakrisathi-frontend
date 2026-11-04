@@ -71,5 +71,6 @@ export interface Settings {
   govtFees: any;
   smsFee: number;
   tiers: number[];
+  extraPer?: number;
   helpline: string;
 }

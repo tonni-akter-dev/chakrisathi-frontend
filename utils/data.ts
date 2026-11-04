@@ -2,7 +2,8 @@ import type { Circular, CatItem, Settings } from './types';
 
 export const SETTINGS: Settings = {
   smsFee: 15,
-  tiers: [100, 150, 200], // [1 post, 2 posts, 3+ posts]
+  tiers: [100, 180, 250, 310, 360], // ১, ২, ৩, ৪, ৫টি পদ (অ্যাডমিন সেটিংসের ডিফল্টের সাথে মিল)
+  extraPer: 50,
   helpline: '01700000000',
   govtFees: undefined
 };

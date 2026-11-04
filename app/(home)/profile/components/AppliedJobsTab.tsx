@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, ArrowRight, Loader2, FileText, Star } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Loader2, FileText, Star, CreditCard, PencilLine, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { useGetMyReviewsQuery } from '@/app/redux/features/apis/review-apis';
 import ReviewModal from './ReviewModal';
+import { APP_STATUS, PAY_STATE, apiJson, formatDate, missingInfo, payState } from '@/utils/applications';
 
 export default function AppliedJobsTab() {
   const [jobs, setJobs] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // 💡 রিভিউ
@@ -36,6 +38,7 @@ export default function AppliedJobsTab() {
       }
     };
     fetchMyApplications();
+    apiJson<any[]>('/application-drafts').then(setDrafts).catch(() => setDrafts([]));
   }, []);
 
   if (isLoading) {
@@ -48,10 +51,31 @@ export default function AppliedJobsTab() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 animate-in fade-in duration-300 my-10">
-      <h2 className="text-2xl font-bold text-slate-900">Applied Jobs</h2>
-      
+      <h2 className="text-2xl font-bold text-slate-900">আমার আবেদন</h2>
+
+      {/* অসম্পূর্ণ আবেদন: মেয়াদের মধ্যে যেখানে থেমেছিলেন সেখান থেকে শুরু হবে */}
+      {drafts.length > 0 && (
+        <section className="space-y-3">
+          <h3 className="text-base font-bold text-slate-700">অসম্পূর্ণ আবেদন</h3>
+          {drafts.map((draft) => (
+            <div key={draft._id} className="flex flex-col justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-5 sm:flex-row sm:items-center">
+              <div className="min-w-0">
+                <div className="font-bold text-slate-900">{draft.circularTitle || draft.circularOrg}</div>
+                <div className="text-sm text-slate-600">{draft.postNames?.join(', ')}</div>
+                <div className="mt-1 text-xs font-medium text-amber-800">{formatDate(draft.expiresAt)} পর্যন্ত সেভ থাকবে</div>
+              </div>
+              <Link href={`/apply/${draft.circularId}`} className="flex flex-none items-center justify-center gap-1.5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-700">
+                আবেদন চালিয়ে যান <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {drafts.length > 0 && jobs.length > 0 && <h3 className="text-base font-bold text-slate-700">জমা দেওয়া আবেদন</h3>}
+
       {/* 💡 ডাটা না থাকলে এম্পটি স্টেট */}
-      {jobs.length === 0 ? (
+      {jobs.length === 0 ? (drafts.length > 0 ? null : (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center">
           <FileText className="h-12 w-12 text-slate-300 mb-4" />
           <h3 className="text-lg font-bold text-slate-700">কোনো আবেদন পাওয়া যায়নি</h3>
@@ -60,7 +84,7 @@ export default function AppliedJobsTab() {
             জব বোর্ডে যান
           </Link>
         </div>
-      ) : (
+      )) : (
         <div className="space-y-4">
           {jobs.map((job) => (
             <div key={job._id} className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition">
@@ -90,15 +114,37 @@ export default function AppliedJobsTab() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex w-full flex-col items-start gap-2 md:w-auto md:items-end">
                 {/* স্ট্যাটাস ব্যাজ */}
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                  job.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                  job.status === 'processing' ? 'bg-brand-100 text-brand-700' : 
-                  job.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
-                }`}>
-                  {job.status}
-                </span>
+                <div className="flex flex-wrap gap-2 md:justify-end">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${PAY_STATE[payState(job)].cls}`}>
+                    {PAY_STATE[payState(job)].label}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${(APP_STATUS[job.status] || APP_STATUS.pending).cls}`}>
+                    {(APP_STATUS[job.status] || APP_STATUS.pending).label}
+                  </span>
+                </div>
+
+                {/* পেমেন্ট বাকি বা বাতিল হলে Pay Now */}
+                {['unpaid', 'rejected'].includes(payState(job)) && job.status !== 'rejected' && (
+                  <Link
+                    href={`/profile/applied-jobs/${job.applicationId}#payment`}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 md:w-auto"
+                  >
+                    <CreditCard className="h-4 w-4" /> Pay Now · ৳{job.amount}
+                  </Link>
+                )}
+
+                {/* তথ্য বাকি থাকলে, কাজ শুরুর আগে পর্যন্ত */}
+                {job.status === 'pending' && (
+                  <Link
+                    href={`/profile/applied-jobs/${job.applicationId}`}
+                    className={`flex items-center gap-1.5 text-sm font-semibold ${missingInfo(job).length ? 'text-amber-700' : 'text-slate-600'} hover:underline`}
+                  >
+                    {missingInfo(job).length ? <AlertCircle className="h-4 w-4" /> : <PencilLine className="h-4 w-4" />}
+                    {missingInfo(job).length ? 'তথ্য দেওয়া বাকি আছে' : 'তথ্য দেখুন বা বদলান'}
+                  </Link>
+                )}
                 
                 {/* 💡 রিভিউ — শুধু সম্পন্ন আবেদনে */}
                 {job.status === 'completed' && (() => {
@@ -130,7 +176,7 @@ export default function AppliedJobsTab() {
                   href={`/track/${job.applicationId}`} 
                   className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 transition"
                 >
-                  বিস্তারিত দেখুন <ArrowRight className="h-3 w-3" />
+                  অগ্রগতি দেখুন <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>
