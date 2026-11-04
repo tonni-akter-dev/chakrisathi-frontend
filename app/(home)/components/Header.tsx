@@ -73,10 +73,10 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-      <div className="container-site flex h-16 items-center justify-between">
+      <div className="container-site flex h-20 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="text-[1.0625rem] font-semibold tracking-tight text-slate-900">
+          <div className="text-[1.5rem] font-semibold tracking-tight text-slate-900">
             সোনার <span className="text-brand-600">হরিণ</span>
           </div>
         </Link>
@@ -87,7 +87,7 @@ export default function Header() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-base font-medium text-slate-600 transition hover:text-brand-600"
+              className="text-xl font-medium text-slate-600 transition hover:text-brand-600"
             >
               {l.label}
             </Link>
@@ -99,9 +99,9 @@ export default function Header() {
           {/* Saved Heart Icon */}
           <Link
             href="/profile/wishlist"
-            className="relative hidden h-9 w-9 place-items-center rounded-full border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-500 sm:grid"
+            className="relative hidden h-10 w-10 place-items-center rounded-full border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-500 sm:grid"
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="h-5 w-5" />
             {state.saved.length > 0 && (
               <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[0.6875rem] font-bold text-white">
                 {bn(state.saved.length)}
@@ -112,7 +112,7 @@ export default function Header() {
           {/* Primary CTA */}
           <Link
             href="/apply"
-            className="hidden rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 md:inline-flex"
+            className="hidden rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 md:inline-flex"
           >
             আবেদন করুন
           </Link>

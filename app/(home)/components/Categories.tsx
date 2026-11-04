@@ -1,8 +1,9 @@
 'use client';
 import { Building2, FlaskConical, Landmark, Layers, Receipt } from 'lucide-react';
-import { CATS, CIRCULARS } from '@/utils/data';
+import { CATS } from '@/utils/data';
 import { bn } from '@/utils/helpers';
 import { useApp } from '@/utils/AppContext';
+import { useGetAllCircularsQuery } from '@/app/redux/features/apis/circular-api';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   layers: Layers,
@@ -15,9 +16,19 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 export default function Categories() {
   const { state, update } = useApp();
 
+  // 💡 API থেকে সব সার্কুলার (ফিল্টার ছাড়া) — প্রতিটি ক্যাটাগরির মোট সংখ্যা গোনার জন্য
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: circulars = [], isLoading } = useGetAllCircularsQuery({}) as { data?: any[]; isLoading: boolean };
+
+  // 💡 ক্লিক করলে: ক্যাটাগরি সেট + নিচের সার্কুলার লিস্টে স্ক্রল
   const setCat = (k: typeof CATS[number]['k']) => {
     update({ cat: k });
-    document.getElementById('jobs')?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById('jobs');
+    if (el) {
+      const headerOffset = 80; // উপরের sticky হেডারের উচ্চতা, দরকার হলে বদলান
+      const y = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -25,15 +36,17 @@ export default function Categories() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {CATS.map((c) => {
           const Icon = iconMap[c.ic] ?? Layers;
-          const count = c.k === 'all'
-            ? CIRCULARS.length
-            : CIRCULARS.filter((x) => x.cat === c.k).length;
+          const count =
+            c.k === 'all'
+              ? circulars.length
+              : circulars.filter((x) => x.cat === c.k).length;
           const active = state.cat === c.k;
+
           return (
             <button
               key={c.k}
               onClick={() => setCat(c.k)}
-              className={`group flex flex-col items-start gap-3 rounded-2xl border bg-white p-4 text-left transition ${
+              className={`group flex flex-col items-start gap-3 rounded-2xl border bg-white p-5 text-left transition ${
                 active
                   ? 'border-brand-600 ring-1 ring-brand-600/20'
                   : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
@@ -47,9 +60,13 @@ export default function Categories() {
                 <Icon className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-slate-900">{c.n}</div>
-                <div className="mt-0.5 text-xs text-slate-500">
-                  {count ? `${bn(count)}টি সার্কুলার` : 'শীঘ্রই'}
+                <div className="text-xl font-semibold text-slate-900">{c.n}</div>
+                <div className="mt-0.5 text-base text-slate-500">
+                  {isLoading
+                    ? 'লোড হচ্ছে...'
+                    : count
+                      ? `${bn(count)}টি সার্কুলার`
+                      : 'শীঘ্রই'}
                 </div>
               </div>
             </button>
